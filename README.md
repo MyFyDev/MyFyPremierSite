@@ -32,8 +32,7 @@ asset (images, fonts, favicon) was downloaded locally and re-pointed to `assets/
 ## Known limitations (inherent to a static snapshot)
 - **Contact form**: displays correctly but does not submit (the live form posts to Wix's
   backend, which no longer exists in this static copy).
-- **Hero background video**: replaced with its still poster image (the Wix video player
-  requires JavaScript). Can be re-enabled as a native autoplay `<video>` on request.
+- **Hero background video**: restored as a native autoplaying `<video>` (`assets/video/hero.mp4`), muted + looped so it plays offline with no scripts. The yacht still image is its poster/fallback.
 - **Interactive bits** (mobile hamburger menu animation, scroll animations, slideshows)
   are static — content is shown in its final state.
 - External click-through links (e.g. "Powered by", Trustpilot) still point to the live web.

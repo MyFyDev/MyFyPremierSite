@@ -1,7 +1,7 @@
 param(
   [string[]]$Pages,                                  # e.g. index,contact-us
   [string]$RawDir  = "C:\Users\bturner_rvfinancingu\Documents\premier\site\_raw",
-  [string]$DistDir = "C:\Users\bturner_rvfinancingu\Documents\premier\site\dist"
+  [string]$DistDir = "C:\Users\bturner_rvfinancingu\Documents\premier\site"
 )
 $ErrorActionPreference = 'Stop'
 $ua  = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
@@ -142,6 +142,14 @@ foreach ($name in $Pages) {
 </style>
 '@
   $h = $h -replace '(?i)</head>', ($reveal + '</head>')
+
+  # 11) restore the hero background video as a native, JS-free autoplaying element (home only)
+  if ($name -eq 'index') {
+    $heroVideo = '<video class="static-hero-video" autoplay muted loop playsinline preload="auto" poster="assets/img/25a1a4_033a51e72da24d00a88b202e181a2b8cf000.jpg" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;border:0;"><source src="assets/video/hero.mp4" type="video/mp4"></video>'
+    if ($h.Contains('</wow-image></wix-video>')) {
+      $h = $h.Replace('</wow-image></wix-video>', '</wow-image>' + $heroVideo + '</wix-video>')
+    }
+  }
 
   $outPath = Join-Path $DistDir "$name.html"
   $h | Out-File -Encoding utf8 $outPath
