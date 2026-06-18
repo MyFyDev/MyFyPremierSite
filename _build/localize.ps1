@@ -87,7 +87,7 @@ foreach ($name in $Pages) {
   # 5) IMAGES: wixstatic /media/<base>/...  -> download ORIGINAL -> assets/img/<base>
   $h = [regex]::Replace($h, "(?i)https://static\.wixstatic\.com/media/([^/""'\s)]+)(?:/[^""'\s)]*)?", {
     param($m)
-    $base = $m.Groups[1].Value
+    $base = $m.Groups[1].Value -replace '%7[Ee]','~'   # normalize URL-encoded tilde to avoid dup files
     $orig = "https://static.wixstatic.com/media/$base"
     Save-Asset $orig (Join-Path $IMG $base) | Out-Null
     'assets/img/' + $base
