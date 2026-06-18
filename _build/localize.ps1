@@ -1,0 +1,155 @@
+param(
+  [string[]]$Pages,                                  # e.g. index,contact-us
+  [string]$RawDir  = "C:\Users\bturner_rvfinancingu\Documents\premier\site\_raw",
+  [string]$DistDir = "C:\Users\bturner_rvfinancingu\Documents\premier\site\dist"
+)
+$ErrorActionPreference = 'Stop'
+$ua  = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+$hdr = @{ 'User-Agent'=$ua; 'Referer'='https://www.myfypremier.com/' }
+
+$IMG  = Join-Path $DistDir 'assets\img'
+$FONT = Join-Path $DistDir 'assets\fonts'
+New-Item -ItemType Directory -Force $IMG, $FONT | Out-Null
+
+# internal nav link map (absolute + root-relative -> local file)
+$nav = [ordered]@{
+  'https://www.myfypremier.com/contact-us'           = 'contact-us.html'
+  'https://www.myfypremier.com/privacy-policy'       = 'privacy-policy.html'
+  'https://www.myfypremier.com/terms-and-conditions' = 'terms-and-conditions.html'
+  'https://www.myfypremier.com/'                     = 'index.html'
+  'https://www.myfypremier.com'                      = 'index.html'
+}
+
+$script:dlCache = @{}   # url -> $true once fetched
+function Save-Asset([string]$url, [string]$destAbs) {
+  if ($script:dlCache.ContainsKey($destAbs)) { return $true }
+  if (Test-Path $destAbs) { $script:dlCache[$destAbs]=$true; return $true }
+  try {
+    Invoke-WebRequest -Uri $url -OutFile $destAbs -Headers $hdr -TimeoutSec 90 -UseBasicParsing
+    $script:dlCache[$destAbs]=$true; return $true
+  } catch {
+    Write-Host "   ! download failed: $url  ($($_.Exception.Message))" -ForegroundColor Yellow
+    return $false
+  }
+}
+
+# ---- used font families (from live document.fonts) ----
+$usedFontFamilies = @('lato-light','lato','playfair-display-v2')
+
+foreach ($name in $Pages) {
+  $rawPath = Join-Path $RawDir "$name.html"
+  if (-not (Test-Path $rawPath)) { Write-Host "skip $name (no raw)" -ForegroundColor Yellow; continue }
+  Write-Host "=== $name ===" -ForegroundColor Cyan
+  $h = Get-Content -Raw $rawPath
+
+  # 1) strip all scripts (Thunderbolt runtime + analytics + sentry) ----------
+  $h = [regex]::Replace($h, '(?is)<script\b[^>]*>.*?</script>', '')
+  $h = [regex]::Replace($h, '(?is)<script\b[^>]*/?>', '')
+  # 2) strip resource-hint links that point off-box (preload/preconnect/etc) -
+  $h = [regex]::Replace($h, '(?is)<link\b[^>]*\brel="(?:preload|prefetch|preconnect|dns-prefetch|modulepreload)"[^>]*>', '')
+  # 2b) strip Google Tag Manager noscript tracking iframes (dead + external)
+  $h = [regex]::Replace($h, '(?is)<iframe\b[^>]*googletagmanager[^>]*>.*?</iframe>', '')
+  $h = [regex]::Replace($h, '(?is)<iframe\b[^>]*googletagmanager[^>]*/?>', '')
+  # 2c) remove Wix background <video> (needs JS to play) - the poster image stays as the hero
+  $h = [regex]::Replace($h, '(?is)<video\b[^>]*>.*?</video>', '')
+  $h = [regex]::Replace($h, '(?is)<video\b[^>]*/?>', '')
+  # 3) strip sourceMappingURL comments inside <style> (inert parastorage refs)
+  $h = [regex]::Replace($h, '/\*#\s*sourceMappingURL=[^*]*\*/', '')
+
+  # 4) FONTS: collect used-family woff2 urls -> download; rewrite ALL to local
+  #    parse @font-face blocks to learn which urls belong to used families
+  foreach ($ff in [regex]::Matches($h, '(?is)@font-face\s*\{(.*?)\}')) {
+    $block = $ff.Groups[1].Value
+    $fam = [regex]::Match($block, "font-family:\s*'?([^;'""]+)'?").Groups[1].Value.Trim().ToLower()
+    if ($usedFontFamilies -contains $fam) {
+      foreach ($um in [regex]::Matches($block, "url\(\s*['""]?((?:https?:)?//[^)'""\s]+\.woff2?)")) {
+        $u = $um.Groups[1].Value
+        $full = if ($u -like '//*') { 'https:' + $u } else { $u }
+        $fn = ($full -split '[/?#]')[-1]
+        Save-Asset $full (Join-Path $FONT $fn) | Out-Null
+      }
+    }
+  }
+  # rewrite EVERY parastorage font url (any path: /fonts/, /tag-bundler/.../fonts-cache/, ...) -> local
+  $h = [regex]::Replace($h, "(?i)(https?:)?//static\.parastorage\.com/[^)'""\s]+?\.(woff2?)", {
+    param($m) 'assets/fonts/' + (($m.Value -split '[/?#]')[-1])
+  })
+
+  # 4c) custom uploaded fonts: static.wixstatic.com/ufonts/<hash>/<fmt>/file.<ext>
+  #     filenames collide ("file.woff2") across families -> name local by <hash>.<ext>
+  $h = [regex]::Replace($h, "(?i)https://static\.wixstatic\.com/ufonts/([^/]+)/(?:ttf|woff2|woff)/[^)'""\s]+?\.(ttf|woff2|woff)", {
+    param($m)
+    $local = $m.Groups[1].Value + '.' + $m.Groups[2].Value
+    Save-Asset $m.Value (Join-Path $FONT $local) | Out-Null
+    'assets/fonts/' + $local
+  })
+
+  # 5) IMAGES: wixstatic /media/<base>/...  -> download ORIGINAL -> assets/img/<base>
+  $h = [regex]::Replace($h, "(?i)https://static\.wixstatic\.com/media/([^/""'\s)]+)(?:/[^""'\s)]*)?", {
+    param($m)
+    $base = $m.Groups[1].Value
+    $orig = "https://static.wixstatic.com/media/$base"
+    Save-Asset $orig (Join-Path $IMG $base) | Out-Null
+    'assets/img/' + $base
+  })
+  # 6) SHAPES (favicon/svg vectors) + any other static.wixstatic path
+  $h = [regex]::Replace($h, "(?i)https://static\.wixstatic\.com/(?:shapes|ficons)/([^/""'\s)]+)", {
+    param($m)
+    $fn = $m.Groups[1].Value
+    Save-Asset "https://static.wixstatic.com/shapes/$fn" (Join-Path $IMG $fn) | Out-Null
+    'assets/img/' + $fn
+  })
+  # 7) video.wixstatic.com refs: <video> already removed; remaining refs are inert JSON.
+  #    Rewrite to a local path (not downloaded) so no wix host remains.
+  $h = [regex]::Replace($h, "(?i)https://video\.wixstatic\.com/[^""'\s)]+", {
+    param($m)
+    $fn = ($m.Value -split '[/?#]')[-1]
+    if ($fn) { 'assets/img/' + $fn } else { $m.Value }
+  })
+
+  # 7b) parastorage NON-font assets (e.g. language-selector flag PNGs) -> assets/img
+  $h = [regex]::Replace($h, "(?i)https://static\.parastorage\.com/[^""'\s)]+?\.(png|jpe?g|gif|svg|webp)", {
+    param($m)
+    $fn = ($m.Value -split '[/?#]')[-1]
+    Save-Asset $m.Value (Join-Path $IMG $fn) | Out-Null
+    'assets/img/' + $fn
+  })
+
+  # 8) internal navigation links -> local html files
+  foreach ($k in $nav.Keys) {
+    $h = $h.Replace('"' + $k + '"', '"' + $nav[$k] + '"')
+    $h = $h.Replace("'" + $k + "'", "'" + $nav[$k] + "'")
+  }
+  # root-relative internal paths
+  $h = [regex]::Replace($h, 'href="/contact-us"', 'href="contact-us.html"')
+  $h = [regex]::Replace($h, 'href="/privacy-policy"', 'href="privacy-policy.html"')
+  $h = [regex]::Replace($h, 'href="/terms-and-conditions"', 'href="terms-and-conditions.html"')
+  $h = [regex]::Replace($h, 'href="/"', 'href="index.html"')
+
+  # 9) neutralize inert metadata attrs that still carry wix URLs (no network effect, just noise)
+  $h = [regex]::Replace($h, '(?i)\s+data-[\w-]+="[^"]*(?:parastorage|wixstatic)[^"]*"', '')
+
+  # 9b) load all images eagerly (no JS-driven lazy-load in a static page)
+  $h = [regex]::Replace($h, '(?i)\s+loading="lazy"', '')
+
+  # 10) reveal media backgrounds that Wix's (now-removed) JS would fade in.
+  #     Scoped to media/background wrappers + bgVideoposter so menus/hover layers stay intact.
+  $reveal = @'
+<style id="static-snapshot-reveal">
+  [data-motion-part^="BG_"]{opacity:1 !important;}
+  .bgVideoposter{opacity:1 !important;visibility:visible !important;}
+  wow-image,wix-bg-media,[data-motion-part^="BG_IMG"] img{opacity:1 !important;}
+</style>
+'@
+  $h = $h -replace '(?i)</head>', ($reveal + '</head>')
+
+  $outPath = Join-Path $DistDir "$name.html"
+  $h | Out-File -Encoding utf8 $outPath
+
+  # report leftover Wix auto-load refs
+  $leftWix = ([regex]::Matches($h, '(?i)(src|srcset|href)="[^"]*(wixstatic|parastorage)')).Count
+  $bgWix   = ([regex]::Matches($h, '(?i)url\([^)]*(wixstatic|parastorage)')).Count
+  Write-Host ("   wrote {0}  ({1:N0} KB)  leftover-wix-loads: src/href={2} css-url={3}" -f $outPath, ((Get-Item $outPath).Length/1kb), $leftWix, $bgWix)
+}
+Write-Host "img files:  $((Get-ChildItem $IMG -File).Count)"
+Write-Host "font files: $((Get-ChildItem $FONT -File).Count)"
