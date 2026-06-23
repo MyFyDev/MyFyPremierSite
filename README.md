@@ -30,8 +30,11 @@ baked into the HTML), then the Wix runtime scripts were removed and every extern
 asset (images, fonts, favicon) was downloaded locally and re-pointed to `assets/`.
 
 ## Known limitations (inherent to a static snapshot)
-- **Contact form**: displays correctly but does not submit (the live form posts to Wix's
-  backend, which no longer exists in this static copy).
+- **Contact form**: wired to email submissions via FormSubmit (a free no-signup
+  form-to-email relay). Submissions go to Morgan@myfyusa.com and CC derek@myfyusa.com.
+  Requires internet to send (it POSTs to https://formsubmit.co). **One-time activation:**
+  the first time the form is submitted, FormSubmit emails a confirmation link to
+  Morgan@myfyusa.com that must be clicked before any submissions are delivered.
 - **Hero background video**: restored as a native autoplaying `<video>` (`assets/video/hero.mp4`), muted + looped so it plays offline with no scripts. The yacht still image is its poster/fallback.
 - **Interactive bits** (mobile hamburger menu animation, scroll animations, slideshows)
   are static — content is shown in its final state.

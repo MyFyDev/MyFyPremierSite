@@ -151,6 +151,29 @@ foreach ($name in $Pages) {
     }
   }
 
+  # 12) wire the contact form to FormSubmit so a static page auto-emails submissions (contact page only)
+  if ($name -eq 'contact-us') {
+    $primaryEmail = 'Morgan@myfyusa.com'      # submissions are emailed here
+    $ccEmail      = 'derek@myfyusa.com'       # and CC'd here
+    # a) give the <form> a POST action to FormSubmit
+    $h = [regex]::Replace($h, '(?is)(<form\b[^>]*?)>',
+        ('${1} action="https://formsubmit.co/' + $primaryEmail + '" method="POST">'), 1)
+    # b) FormSubmit config + recipients + honeypot, right after the <form> tag
+    $hidden = '<input type="hidden" name="_subject" value="New contact form submission - MyFy Premier">' +
+              '<input type="hidden" name="_cc" value="' + $ccEmail + '">' +
+              '<input type="hidden" name="_template" value="table">' +
+              '<input type="text" name="_honey" style="display:none !important" tabindex="-1" autocomplete="off">'
+    $h = [regex]::Replace($h, '(?is)(<form\b[^>]*>)', ('${1}' + $hidden), 1)
+    # c) give each field a name (FormSubmit uses these as the labels in the email)
+    $fieldNames = [ordered]@{ 'First name'='First Name'; 'Last name'='Last Name'; 'Phone. Phone'='Phone'; 'Email'='email'; 'Message'='Message' }
+    foreach ($al in $fieldNames.Keys) {
+      $pat = '(?is)(<(?:input|textarea)\b)([^>]*aria-label="' + [regex]::Escape($al) + '")'
+      $h = [regex]::Replace($h, $pat, ('${1} name="' + $fieldNames[$al] + '"${2}'), 1)
+    }
+    # d) make the styled submit button actually submit the form
+    $h = [regex]::Replace($h, '(?is)(<button\b[^>]*data-hook="submit-button"[^>]*?)type="button"', '${1}type="submit"', 1)
+  }
+
   $outPath = Join-Path $DistDir "$name.html"
   $h | Out-File -Encoding utf8 $outPath
 
