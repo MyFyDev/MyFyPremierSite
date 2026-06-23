@@ -174,6 +174,31 @@ foreach ($name in $Pages) {
     $h = [regex]::Replace($h, '(?is)(<button\b[^>]*data-hook="submit-button"[^>]*?)type="button"', '${1}type="submit"', 1)
   }
 
+  # 13) add "Yacht Financing" to the desktop main menu and footer (left column) on every page.
+  #     Runs AFTER step 8 (links already rewritten to index.html). Clones the existing Home
+  #     item so the new item inherits each page's exact styling/classes.
+  $yfHref = 'yacht-financing.html'; $yfLabel = 'Yacht Financing'
+  # desktop horizontal menu: clone the Home <li>, insert the new item right after it
+  $h = [regex]::Replace($h, '(?s)<li\b(?:(?!</li>).)*?data-part="menu-item-link"\s+href="index\.html"(?:(?!</li>).)*?</li>', {
+    param($m)
+    $item = $m.Value
+    if ($item -match 'yacht-financing\.html') { return $item }       # idempotent
+    $new = $item -replace 'href="index\.html"', ('href="' + $yfHref + '"')
+    $new = $new -replace '\s*data-selected="true"', ''
+    $new = $new -replace '\s*aria-current="page"', ''
+    $new = $new -replace 'data-interactive="false"', 'data-interactive="true"'
+    $new = [regex]::Replace($new, '(data-part="label"[^>]*>)Home(<)', ('${1}' + $yfLabel + '${2}'))
+    $item + $new
+  })
+  # footer left column (rich-text links): clone the Home <p>, insert after it
+  $h = [regex]::Replace($h, '(?s)<p[^>]*><a href="index\.html"[^>]*>Home</a></p>', {
+    param($m)
+    $item = $m.Value
+    if ($item -match 'yacht-financing\.html') { return $item }
+    $new = ($item -replace 'href="index\.html"', ('href="' + $yfHref + '"')) -replace '>Home</a>', ('>' + $yfLabel + '</a>')
+    $item + $new
+  })
+
   $outPath = Join-Path $DistDir "$name.html"
   $h | Out-File -Encoding utf8 $outPath
 
@@ -184,3 +209,15 @@ foreach ($name in $Pages) {
 }
 Write-Host "img files:  $((Get-ChildItem $IMG -File).Count)"
 Write-Host "font files: $((Get-ChildItem $FONT -File).Count)"
+
+# --- sitemap.xml: lists every page on the canonical domain (clean URLs, no .html) ---
+$base = 'https://www.myfypremier.com'
+$siteMapPages = [ordered]@{ '' = '1.0'; 'yacht-financing' = '0.9'; 'contact-us' = '0.8'; 'privacy-policy' = '0.5'; 'terms-and-conditions' = '0.5' }
+$sm = @('<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+foreach ($slug in $siteMapPages.Keys) {
+  $loc = if ($slug -eq '') { "$base/" } else { "$base/$slug" }
+  $sm += "  <url><loc>$loc</loc><priority>$($siteMapPages[$slug])</priority></url>"
+}
+$sm += '</urlset>'
+($sm -join "`n") | Out-File -Encoding utf8 (Join-Path $DistDir 'sitemap.xml')
+Write-Host "sitemap.xml: $($siteMapPages.Count) urls"

@@ -11,8 +11,12 @@ from local files and makes **no network calls back to Wix** (or Google/parastora
 - `yacht-financing.html` — Yacht Financing (sourced from the saved `blank.html`; this
   page is not currently published on the live site)
 
-All assets live under `assets/` (`assets/img`, `assets/fonts`). Internal links between
-pages are rewritten to local files.
+All assets live under `assets/` (`assets/img`, `assets/fonts`, `assets/video`). Internal
+links between pages are rewritten to local files. `sitemap.xml` lists all pages (on the
+canonical domain https://www.myfypremier.com).
+
+"Yacht Financing" appears in the desktop main menu (after Home) and the footer's left
+column on every page.
 
 ## How to view
 Just open `index.html` in a browser, or serve the folder over a local web server
@@ -36,8 +40,12 @@ asset (images, fonts, favicon) was downloaded locally and re-pointed to `assets/
   the first time the form is submitted, FormSubmit emails a confirmation link to
   Morgan@myfyusa.com that must be clicked before any submissions are delivered.
 - **Hero background video**: restored as a native autoplaying `<video>` (`assets/video/hero.mp4`), muted + looped so it plays offline with no scripts. The yacht still image is its poster/fallback.
-- **Interactive bits** (mobile hamburger menu animation, scroll animations, slideshows)
-  are static — content is shown in its final state.
+- **Mobile hamburger menu is non-functional**: Wix builds the mobile menu (and its
+  open/close behavior) with JavaScript that was removed, so on narrow screens the
+  hamburger doesn't open and has no links. The desktop menu (incl. Yacht Financing) is
+  fully working. A small dependency-free mobile menu can be added if needed.
+- **Other interactive bits** (scroll animations, slideshows) are static — content is
+  shown in its final state.
 - External click-through links (e.g. "Powered by", Trustpilot) still point to the live web.
 
 ## Rebuilding
