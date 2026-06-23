@@ -16,7 +16,8 @@ links between pages are rewritten to local files. `sitemap.xml` lists all pages 
 canonical domain https://www.myfypremier.com).
 
 "Yacht Financing" appears in the desktop main menu (after Home) and the footer's left
-column on every page.
+column on every page. (The Yacht Financing page came from an older capture whose Wix
+header couldn't host the menu, so it gets a matching white header nav injected instead.)
 
 ## How to view
 Just open `index.html` in a browser, or serve the folder over a local web server

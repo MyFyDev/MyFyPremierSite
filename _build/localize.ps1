@@ -239,6 +239,15 @@ body.smm-open{overflow:hidden}
             '<script>(function(){var b=document.getElementById("smm-btn"),o=document.getElementById("smm-overlay");if(!b||!o)return;function set(open){o.classList.toggle("open",open);b.classList.toggle("open",open);document.body.classList.toggle("smm-open",open);b.setAttribute("aria-expanded",open?"true":"false");}b.addEventListener("click",function(){set(!o.classList.contains("open"));});o.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){set(false);});});document.addEventListener("keydown",function(e){if(e.key==="Escape")set(false);});})();</script>'
   $h = $h.Replace('</body>', $mmBody + '</body>')
 
+  # 15) Yacht page only: its (older-capture) Wix header can't host the horizontal menu,
+  #     so add a clean white nav into the header (matches the page's own menu styling).
+  if ($name -eq 'yacht-financing') {
+    $ynCss = '<style id="yacht-topnav-style">.yacht-topnav{position:absolute;top:0;right:48px;height:100%;display:none;align-items:center;gap:34px;z-index:60}.yacht-topnav a{color:#fff;font-family:lato-light,lato,sans-serif;font-size:18px;text-decoration:none;white-space:nowrap}.yacht-topnav a:hover,.yacht-topnav a[aria-current="page"]{color:#c9a877}@media screen and (min-width:751px){.yacht-topnav{display:flex}}</style>'
+    $h = $h.Replace('</head>', $ynCss + '</head>')
+    $ynJs = '<script>(function(){var links=[["index.html","Home"],["yacht-financing.html","Yacht Financing"],["contact-us.html","Contact Us"]];document.querySelectorAll("header").forEach(function(h){if(getComputedStyle(h).position==="static")h.style.position="relative";var n=document.createElement("nav");n.className="yacht-topnav";n.setAttribute("aria-label","Primary");links.forEach(function(l){var a=document.createElement("a");a.href=l[0];a.textContent=l[1];if(l[0]==="yacht-financing.html")a.setAttribute("aria-current","page");n.appendChild(a);});h.appendChild(n);});})();</script>'
+    $h = $h.Replace('</body>', $ynJs + '</body>')
+  }
+
   $outPath = Join-Path $DistDir "$name.html"
   $h | Out-File -Encoding utf8 $outPath
 
