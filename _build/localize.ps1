@@ -188,6 +188,12 @@ foreach ($name in $Pages) {
     $new = $new -replace '\s*aria-current="page"', ''
     $new = $new -replace 'data-interactive="false"', 'data-interactive="true"'
     $new = [regex]::Replace($new, '(data-part="label"[^>]*>)Home(<)', ('${1}' + $yfLabel + '${2}'))
+    # on the Yacht Financing page, mark its own menu item as the current page
+    if ($name -eq 'yacht-financing') {
+      $new = $new -replace 'data-part="menu-item-content"', 'data-selected="true" data-part="menu-item-content"'
+      $new = $new -replace 'data-interactive="true"', 'data-interactive="false"'
+      $new = [regex]::Replace($new, '(data-part="menu-item-link"[^>]*?)>', '${1} aria-current="page">')
+    }
     $item + $new
   })
   # footer left column (rich-text links): clone the Home <p>, insert after it
@@ -198,6 +204,40 @@ foreach ($name in $Pages) {
     $new = ($item -replace 'href="index\.html"', ('href="' + $yfHref + '"')) -replace '>Home</a>', ('>' + $yfLabel + '</a>')
     $item + $new
   })
+
+  # 14) inject a self-contained mobile menu (Wix's JS-driven hamburger was stripped).
+  #     Own button + overlay + tiny vanilla JS — no external calls. Shown only <=750px.
+  $mmCss = '<style id="smm-style">
+.wixui-hamburger-menu,[class*="HamburgerOpenButton"],[data-semantic-classname="hamburger-open-button"],[data-hook="hamburger-overlay-root"],[class*="HamburgerOverlay"],.wixui-hamburger-overlay{display:none!important}
+#smm-btn{display:none}
+#smm-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2147483646;background:#183131;display:none;flex-direction:column;align-items:center;justify-content:center;gap:30px}
+#smm-overlay.open{display:flex}
+#smm-overlay a{color:#fff;font-family:playfair-display-v2,serif;font-size:28px;text-decoration:none;letter-spacing:.4px}
+#smm-overlay a:hover,#smm-overlay a:focus,#smm-overlay a[aria-current="page"]{color:#c9a877}
+body.smm-open{overflow:hidden}
+#smm-btn.open{background:#fff}
+#smm-btn.open span{background:#183131}
+#smm-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+#smm-btn.open span:nth-child(2){opacity:0}
+#smm-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media screen and (max-width:750px){
+#smm-btn{display:flex;position:fixed;top:16px;right:16px;z-index:2147483647;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;background:#c9a877;border:0;border-radius:8px;cursor:pointer;padding:11px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+#smm-btn span{display:block;height:2px;width:100%;background:#183131;border-radius:2px;transition:transform .25s ease,opacity .2s ease}
+}
+</style>'
+  $h = $h.Replace('</head>', $mmCss + '</head>')
+
+  $curHref = "$name.html"
+  $mmItems = @(@('index.html','Home'), @('yacht-financing.html','Yacht Financing'), @('contact-us.html','Contact Us'))
+  $linksHtml = ''
+  foreach ($it in $mmItems) {
+    $cur = if ($it[0] -eq $curHref) { ' aria-current="page"' } else { '' }
+    $linksHtml += '<a href="' + $it[0] + '"' + $cur + '>' + $it[1] + '</a>'
+  }
+  $mmBody = '<button id="smm-btn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>' +
+            '<div id="smm-overlay" role="dialog" aria-modal="true" aria-label="Site navigation">' + $linksHtml + '</div>' +
+            '<script>(function(){var b=document.getElementById("smm-btn"),o=document.getElementById("smm-overlay");if(!b||!o)return;function set(open){o.classList.toggle("open",open);b.classList.toggle("open",open);document.body.classList.toggle("smm-open",open);b.setAttribute("aria-expanded",open?"true":"false");}b.addEventListener("click",function(){set(!o.classList.contains("open"));});o.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){set(false);});});document.addEventListener("keydown",function(e){if(e.key==="Escape")set(false);});})();</script>'
+  $h = $h.Replace('</body>', $mmBody + '</body>')
 
   $outPath = Join-Path $DistDir "$name.html"
   $h | Out-File -Encoding utf8 $outPath

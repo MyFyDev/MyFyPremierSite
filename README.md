@@ -40,10 +40,13 @@ asset (images, fonts, favicon) was downloaded locally and re-pointed to `assets/
   the first time the form is submitted, FormSubmit emails a confirmation link to
   Morgan@myfyusa.com that must be clicked before any submissions are delivered.
 - **Hero background video**: restored as a native autoplaying `<video>` (`assets/video/hero.mp4`), muted + looped so it plays offline with no scripts. The yacht still image is its poster/fallback.
-- **Mobile hamburger menu is non-functional**: Wix builds the mobile menu (and its
-  open/close behavior) with JavaScript that was removed, so on narrow screens the
-  hamburger doesn't open and has no links. The desktop menu (incl. Yacht Financing) is
-  fully working. A small dependency-free mobile menu can be added if needed.
+- **Mobile menu**: replaced Wix's JS-driven hamburger (which was stripped) with a small,
+  self-contained menu — a gold hamburger button (shown ≤750px) opens a full-screen
+  overlay with Home / Yacht Financing / Contact Us and morphs into a close (X). Pure
+  inline CSS+JS, no external calls. The current page is highlighted gold.
+- **Mobile layout width**: the page inherits Wix's mobile layout, which has a ~480px
+  minimum width (so very narrow phones may show a slight horizontal scroll). This is the
+  original Wix behavior, not introduced by the static conversion.
 - **Other interactive bits** (scroll animations, slideshows) are static — content is
   shown in its final state.
 - External click-through links (e.g. "Powered by", Trustpilot) still point to the live web.
