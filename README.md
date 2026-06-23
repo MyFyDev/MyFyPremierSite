@@ -17,7 +17,9 @@ canonical domain https://www.myfypremier.com).
 
 "Yacht Financing" appears in the desktop main menu (after Home) and the footer's left
 column on every page. (The Yacht Financing page came from an older capture whose Wix
-header couldn't host the menu, so it gets a matching white header nav injected instead.)
+header couldn't host the menu, so it gets a teal nav bar injected that matches the
+homepage/Contact Us nav bar — same #3e7e7b strip, links with current-page underline,
+and Apply Now button.)
 
 ## How to view
 Just open `index.html` in a browser, or serve the folder over a local web server

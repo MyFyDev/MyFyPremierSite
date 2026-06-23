@@ -240,11 +240,12 @@ body.smm-open{overflow:hidden}
   $h = $h.Replace('</body>', $mmBody + '</body>')
 
   # 15) Yacht page only: its (older-capture) Wix header can't host the horizontal menu,
-  #     so add a clean white nav into the header (matches the page's own menu styling).
+  #     so inject a teal menu bar matching the homepage/Contact Us nav bar exactly
+  #     (teal #3e7e7b strip, white 15px links with current-page underline, Apply Now button).
   if ($name -eq 'yacht-financing') {
-    $ynCss = '<style id="yacht-topnav-style">.yacht-topnav{position:absolute;top:0;right:48px;height:100%;display:none;align-items:center;gap:34px;z-index:60}.yacht-topnav a{color:#fff;font-family:lato-light,lato,sans-serif;font-size:18px;text-decoration:none;white-space:nowrap}.yacht-topnav a:hover,.yacht-topnav a[aria-current="page"]{color:#c9a877}@media screen and (min-width:751px){.yacht-topnav{display:flex}}</style>'
+    $ynCss = '<style id="ymb-style">.ymb{position:absolute;top:100%;left:0;width:100%;height:56px;background:#3e7e7b;display:none;align-items:center;box-sizing:border-box;padding:0 100px;z-index:40}@media screen and (min-width:751px){.ymb{display:flex}}.ymb a.ymb-link{color:#fff;font-family:lato-light,lato,sans-serif;font-size:15px;text-decoration:none;padding:0 18px;line-height:56px;position:relative}.ymb a.ymb-link[aria-current="page"]::after{content:"";position:absolute;left:18px;right:18px;bottom:15px;height:1px;background:#fff}.ymb .ymb-spacer{flex:1}.ymb a.ymb-apply{background:#fff;color:#183131;font-family:lato-light,lato,sans-serif;font-size:14px;text-decoration:none;padding:11px 22px;border-radius:4px}</style>'
     $h = $h.Replace('</head>', $ynCss + '</head>')
-    $ynJs = '<script>(function(){var links=[["index.html","Home"],["yacht-financing.html","Yacht Financing"],["contact-us.html","Contact Us"]];document.querySelectorAll("header").forEach(function(h){if(getComputedStyle(h).position==="static")h.style.position="relative";var n=document.createElement("nav");n.className="yacht-topnav";n.setAttribute("aria-label","Primary");links.forEach(function(l){var a=document.createElement("a");a.href=l[0];a.textContent=l[1];if(l[0]==="yacht-financing.html")a.setAttribute("aria-current","page");n.appendChild(a);});h.appendChild(n);});})();</script>'
+    $ynJs = '<script>(function(){var links=[["index.html","Home",false],["yacht-financing.html","Yacht Financing",true],["contact-us.html","Contact Us",false]];document.querySelectorAll("header").forEach(function(hd){if(getComputedStyle(hd).position==="static")hd.style.position="relative";var bar=document.createElement("div");bar.className="ymb";links.forEach(function(l){var a=document.createElement("a");a.className="ymb-link";a.href=l[0];a.textContent=l[1];if(l[2])a.setAttribute("aria-current","page");bar.appendChild(a);});var sp=document.createElement("div");sp.className="ymb-spacer";bar.appendChild(sp);var ap=document.createElement("a");ap.className="ymb-apply";ap.href="https://www.myfy.us/premier";ap.textContent="Apply Now";bar.appendChild(ap);hd.appendChild(bar);});})();</script>'
     $h = $h.Replace('</body>', $ynJs + '</body>')
   }
 
