@@ -98,18 +98,22 @@ body.menu-open{overflow:hidden}
 .center{text-align:center}
 .mt-btn{margin-top:32px}
 
-/* ---------- Features (3-up) ---------- */
-.features{display:grid;grid-template-columns:repeat(3,1fr);gap:44px;margin-top:22px}
-.feature .feat-icon{width:38px;height:38px;color:var(--gold);margin-bottom:16px}
-.feature h3{font-size:1.875rem;margin-bottom:.35em}
-.feature p{color:#3a3a3a;font-size:1rem}
-.section-dark .feature p{color:#c2d0cd}
+/* ---------- Features (stacked 2-column rows on a dark watermark bg) ---------- */
+.section-features{background:#183131 url('../img/25a1a4_de9ba1f456934feca2c9226460e36bcc~mv2.png') center/cover no-repeat;color:#fff}
+.section-features .section-title{color:#fff}
+.features{max-width:1100px;margin:26px auto 0;display:grid;gap:0}
+.feature{display:grid;grid-template-columns:1fr 1.25fr;gap:50px;align-items:center;padding:32px 4px;border-bottom:1px solid rgba(255,255,255,.16)}
+.feature-head{display:flex;align-items:center;gap:18px}
+.feature .feat-icon{width:36px;height:36px;color:var(--gold);flex:none;margin:0}
+.feature h3{font-size:1.875rem;margin:0;color:#fff}
+.feature-desc{color:#fff;font-size:.95rem;margin:0}
+.feature-desc a{color:#fff;text-decoration:underline}
 
 /* ---------- Testimonials ---------- */
 .testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:22px}
 .testimonial{text-align:center;padding:0 6px}
 .testimonial .mark{font-family:var(--serif);font-size:3.2rem;color:var(--gold);line-height:.1;display:block;margin:10px 0 18px}
-.testimonial .quote{color:#3a3a3a;font-size:1rem;margin-bottom:16px}
+.testimonial .quote{color:var(--ink);font-size:1rem;margin-bottom:16px}
 .testimonial .who{font-family:var(--serif);font-weight:400;font-size:1.5rem;color:var(--dark)}
 
 /* ---------- Program (yacht) ---------- */
@@ -186,7 +190,7 @@ body.menu-open{overflow:hidden}
    Responsive
    ============================================================ */
 @media (max-width:900px){
-  .features,.testimonials,.steps,.officers{grid-template-columns:1fr 1fr;gap:34px}
+  .testimonials,.steps,.officers{grid-template-columns:1fr 1fr;gap:34px}
   .loan-cards{grid-template-columns:1fr}
   .program-list{grid-template-columns:1fr 1fr}
   .contact-grid{grid-template-columns:1fr;gap:36px}
@@ -196,7 +200,8 @@ body.menu-open{overflow:hidden}
   .hamburger{display:flex}
   .header-top{padding-right:74px}
   .powered{display:none}
-  .features,.testimonials,.steps,.officers,.program-list{grid-template-columns:1fr;gap:28px}
+  .testimonials,.steps,.officers,.program-list{grid-template-columns:1fr;gap:28px}
+  .feature{grid-template-columns:1fr;gap:12px;text-align:left}
   .officer img{width:150px;height:150px}
   .trust{gap:34px}
   .trust img{height:44px}
