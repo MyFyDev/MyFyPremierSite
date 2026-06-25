@@ -1,7 +1,7 @@
 # MyFy Premier Static Site — Hand-off Document
 
 > Complete state of the project so a fresh agent can continue with zero guesswork.
-> Last updated at git HEAD `08e7332` (branch `master`).
+> Last updated after a full element-by-element fidelity pass against the live site (branch `master`).
 
 ---
 
@@ -99,14 +99,16 @@ Page list, titles, descriptions, and active-nav are defined in the `$pages` arra
 - Body: **Lato** 400 → `2hXzmNaFRuKTSBR9nRGO-A.woff2`; Lato 700 → `7nLfsQCzhQW_PwpkrwroYw.woff2`
 - (@font-face declarations are at the top of `site.css`.)
 
-**Type scale (desktop, measured live)**
+**Type scale (desktop, re-measured live element-by-element — see §9 tooling)**
 - Hero title: 73px / Playfair 400 / white
-- Big section titles ("Features…", "Testimonials"): ~55px / Playfair 400
-- Smaller section title ("Welcome to MyFy Premier"): 40px → use class `.section-title.sm`
-- Feature/step titles (h3): 30px / Playfair 400
-- Testimonial names: 24px / Playfair 400
-- Nav links: 18px / Lato 400 / white
-- Body paragraphs: 16px / Lato 400 / line-height 24px / letter-spacing ~0.5px / near-black
+- Standard section titles ("Welcome", "Testimonials", "Our Officers", every prose/legal H2…): **40px** / Playfair 400
+- "Features That Set Us Apart" is the ONE larger title: **~49px** (`.section-features .section-title`)
+- Feature titles (h3): 30px / Playfair 400 / white
+- Testimonial names: **22px** / Playfair 400; officer names: **~19px**
+- Legal prose: H1 ~44px (left-aligned), H2 ~40px, H3 ~25px (all left, not centered)
+- Nav links: **15px** / Lato 400 / white; the "Apply Now" nav button: **14px / 700**
+- Body paragraphs: 16px / Lato (the local 'Lato' @font-face actually loads the Lato-**Light** file
+  `2hXz…woff2`, which is exactly what live calls "lato-light") / line-height 24px / letter-spacing 0.5px / **#000**
 
 **Header (90px dark top row + 56px teal nav bar)**
 - Top row: MyFy Premier logo (height 42px) + "Powered by" label + My Financing USA logo.
@@ -120,8 +122,10 @@ Page list, titles, descriptions, and active-nav are defined in the `$pages` arra
   **gold icon + Playfair title on the LEFT**, **white Lato description on the RIGHT**, with a
   thin divider line between rows. (NOT a 3-across grid, NOT icon-above-title.)
 
-**Footer (dark, 3 columns)**: "Navigate" (page links) | "Visit Us" (address + Trustpilot) |
-brand logo + copyright. Plus a bottom hard-credit-inquiry disclaimer line.
+**Footer (dark, 3 columns — ALL text in tan-gold `#e5c69c`, matching live)**: page links |
+address + Trustpilot | MyFy logo + "Powered by My Financing USA". No column headings (live has none).
+Bottom band = two disclaimers on the LEFT (hard-credit-inquiry + the APR/rate disclaimer) and the
+`© 2026 …` copyright RIGHT-aligned.
 
 **Feature icons** are clean hand-drawn line SVGs (anchor / ship / star-burst) — APPROXIMATIONS,
 not the exact Wix icons. Open item if pixel-exact icons are wanted (pull from live site).
@@ -209,6 +213,24 @@ The form posts to **FormSubmit** (no backend). In `_src/pages/contact-us.content
 ---
 
 ## 9. Verification checklist (do this against the LIVE site, per element)
+
+> **Measurement tooling (added during the fidelity pass).** The "Claude in Chrome" extension
+> BLOCKS reading any JS-eval output from the live Wix site (cookies), so computed styles were
+> captured with **headless Chrome driven over the DevTools Protocol** from PowerShell:
+> - `_build/audit-styles.js` — the audit expression (drills to text leaves; returns JSON of
+>   headings, nav, buttons, body, footer band with font/size/weight/lh/ls/color).
+> - `_build/compare.ps1 -Bases home,contact,…` — diffs `_build/_audit/live-*.json` vs `loc-*.json`
+>   and flags `*SIZE/*COLOR/*WT`. (`*FONT(playfair-display-v2/Playfair Display)` is a false positive
+>   — same font, different internal name; ignore it.)
+> - Capture pattern: launch `chrome --headless=new --remote-debugging-port=PORT --user-data-dir=<fresh>`,
+>   poll `http://127.0.0.1:PORT/json` for the page target's `webSocketDebuggerUrl`, connect via
+>   `System.Net.WebSockets.ClientWebSocket`, `Runtime.evaluate{returnByValue:true}`. Run this INLINE
+>   in the pwsh-7 tool (the `_build/_audit/*.json` outputs are gitignored). GOTCHAS: `powershell -File`
+>   is Windows PowerShell **5.1** (no `if`-as-expression / `??`, mangles UTF-8) — use `pwsh`. The local
+>   single-threaded `serve.ps1` can still be streaming the 8 MB hero video when you navigate on, so a
+>   later page may be measured before `site.css` loads — add a warmup that waits for `body` font-family
+>   to be Lato before auditing.
+
 1. Build (`build.ps1`), serve (`serve.ps1`), hard-refresh.
 2. For each element type (hero, each section title, h3, body, nav, buttons, footer): compare
    **computed** font-family / size / weight / line-height / letter-spacing / color against the
@@ -221,9 +243,19 @@ The form posts to **FormSubmit** (no backend). In `_src/pages/contact-us.content
 ## 10. Known open items / things to confirm
 - Feature icons are approximations (pull exact SVGs from live if pixel-match required).
 - Yacht loan-rate numbers — confirm with client.
-- Privacy/Terms legal text ("Bailey Carrier Capital") — proofread with client.
-- The user has flagged fidelity repeatedly; the last round fixed heading weight (400),
-  swapped/fixed logos + "Powered by", the Features section layout, and text color. Keep
-  verifying against the live site rather than assuming a match.
+- Privacy/Terms legal text ("Bailey Carrier Capital") — proofread with client. NOTE: the footer
+  now also carries the live APR/rate disclaimer, which adds another "Bailey Carrier Capital dba
+  My Financing USA" reference and the "6.24% to 19.95%" rate range — include in that proofing.
+- **Fidelity pass (this round), verified by measuring live computed styles element-by-element:**
+  corrected standard section titles 54→40px; Features title →49px; nav links 18→15px; Apply
+  button 14px/700; testimonial names 24→22px; officer names →19px; legal prose H1/H2/H3 →
+  44/40/25px left-aligned; body →#000 / 0.5px; **rebuilt the footer to live's all-gold scheme**
+  (gold text, no column headings, disclaimers-left + copyright-right, added the APR disclaimer).
+- Two INTENTIONAL deviations from a literal live match (both judgment calls, flag if client objects):
+  (1) headings use brand teal `#183131`, live uses pure `#000` on most headings — visually
+  indistinguishable, and live is itself inconsistent (its home "Welcome" is `#183131`).
+  (2) Terms H1 normalized to 44px to match the Privacy H1; live's Terms H1 is an inconsistent 64px.
+- Still verify against the LIVE site rather than assuming a match (live uses fluid type scaling,
+  so px shift slightly with viewport width — these targets are measured at ~1440px desktop).
 - Hosting/deploy target is unknown (site currently lives locally). `sitemap.xml` uses
   `https://www.myfypremier.com` canonical URLs.
