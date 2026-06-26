@@ -1,2 +1,4 @@
-# Throwaway fidelity-measurement output (computed-style JSON captures + screenshots)
-_build/_audit/
+# Throwaway fidelity-measurement scratch dirs (computed-style JSON, screenshots, etc.)
+_build/_*/
+# Ad-hoc CDP measurement scratch scripts (canonical tooling = audit-styles.js + compare.ps1)
+_build/measure*.ps1

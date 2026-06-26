@@ -110,8 +110,16 @@ Page list, titles, descriptions, and active-nav are defined in the `$pages` arra
 - Body paragraphs: 16px / Lato (the local 'Lato' @font-face actually loads the Lato-**Light** file
   `2hXz…woff2`, which is exactly what live calls "lato-light") / line-height 24px / letter-spacing 0.5px / **#000**
 
+**Content column / side spacing** — live uses a FLUID column **~91.4% of viewport, capped at 1600px**
+(≈4.5% gutter each side), NOT a fixed 1200px. CSS: `--maxw:1600px` + `--colw:91.4%`;
+`.container`, `.header-top`, and `.hero-inner` all use `width:var(--colw);max-width:var(--maxw)` so the
+header, hero, every section and the footer share ONE left edge. (Inner blocks keep their own caps —
+`.features`1100 / `.program-list`940 / `.loan-cards`840 / `.prose`880 — to avoid over-stretch at 1600px.)
+
 **Header (90px dark top row + 56px teal nav bar)**
-- Top row: MyFy Premier logo (height 42px) + "Powered by" label + My Financing USA logo.
+- Top row: MyFy Premier logo (**height 55px** — matches live; the old "42px" was wrong) + a
+  tan-gold (`#e5c69c`) "Powered by" label + the My Financing USA logo (constrained to a **106×37px**
+  box like live, via `height:37px;width:106px` + `preserveAspectRatio` letterboxing — NOT a wider auto width).
 - Teal nav bar `#3e7e7b` with a **4px `#c8a168` bottom border**; links Home / Yacht Financing /
   Contact Us (current page underlined) on the left, white **Apply Now** button on the right.
 - ≤750px: teal nav hidden, a gold hamburger (top-right) opens a full-screen overlay menu.
@@ -230,6 +238,11 @@ The form posts to **FormSubmit** (no backend). In `_src/pages/contact-us.content
 >   single-threaded `serve.ps1` can still be streaming the 8 MB hero video when you navigate on, so a
 >   later page may be measured before `site.css` loads — add a warmup that waits for `body` font-family
 >   to be Lato before auditing.
+> - **Mobile screenshot gotcha:** on this machine headless `--screenshot`/`--window-size` can't render a
+>   CSS viewport below ~484px (OS display scaling + Chrome's min window width), so a "390px" `--screenshot`
+>   actually lays out at ~484px and the 390-wide image canvas clips the right edge (looks like a fake
+>   overflow/clip bug). For TRUE phone widths use CDP `Emulation.setDeviceMetricsOverride` then
+>   `Page.captureScreenshot`; overflow/computed-style checks via forced device metrics are accurate.
 
 1. Build (`build.ps1`), serve (`serve.ps1`), hard-refresh.
 2. For each element type (hero, each section title, h3, body, nav, buttons, footer): compare
