@@ -101,9 +101,8 @@ body.menu-open{overflow:hidden}
 .section-dark{background:var(--dark);color:#e9efed}
 .section-dark h1,.section-dark h2,.section-dark h3,.section-dark h4{color:#fff}
 .section-tint{background:#f4f6f5}
-/* Live standard section title (H2) is 40px; "Features" is the lone larger one (~49px) */
+/* Every section-title H2 (incl. .sm and the Features section) shares ONE size for uniform H2 sizing */
 .section-title{text-align:center;font-size:clamp(1.85rem,4.6vw,2.5rem);font-weight:400;margin:0 0 .1em;overflow-wrap:break-word}
-.section-title.sm{font-size:clamp(1.7rem,3.4vw,2.5rem)}
 .divider{width:50px;height:3px;background:var(--gold);border:0;margin:16px auto 40px}
 .lead{max-width:780px;margin:0 auto;text-align:center;color:var(--ink);font-size:1rem}
 .section-dark .lead{color:#dbe4e2}
@@ -112,7 +111,7 @@ body.menu-open{overflow:hidden}
 
 /* ---------- Features (stacked 2-column rows on a dark watermark bg) ---------- */
 .section-features{background:#183131 url('../img/25a1a4_de9ba1f456934feca2c9226460e36bcc~mv2.png') center/cover no-repeat;color:#fff}
-.section-features .section-title{color:#fff;font-size:clamp(2.1rem,5.4vw,3.05rem)}
+.section-features .section-title{color:#fff}
 .features{max-width:1100px;margin:26px auto 0;display:grid;gap:0}
 .feature{display:grid;grid-template-columns:1fr 1.25fr;gap:50px;align-items:center;padding:32px 4px;border-bottom:1px solid rgba(255,255,255,.16)}
 .feature-head{display:flex;align-items:center;gap:18px}
@@ -204,7 +203,7 @@ body.menu-open{overflow:hidden}
 .prose{max-width:880px;margin:0 auto;overflow-wrap:break-word}
 /* Live legal-page headings: H1 ~44px, H2 ~40px, H3 ~25px, all left-aligned */
 .prose h1{font-size:clamp(2rem,3.6vw,2.75rem);text-align:left;margin-bottom:.5em}
-.prose h2{font-size:clamp(1.9rem,3.4vw,2.5rem);margin:1.4em 0 .4em}
+.prose h2{font-size:clamp(1.85rem,4.6vw,2.5rem);margin:1.4em 0 .4em}
 .prose h3{font-size:1.5rem;margin:1.3em 0 .35em}
 .prose p,.prose li{color:#2c3a39;font-size:1rem}
 .prose ul{padding-left:1.2em}
