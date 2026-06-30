@@ -1,6 +1,0 @@
-# Throwaway fidelity-measurement scratch dirs (computed-style JSON, screenshots, etc.)
-_build/_*/
-# Ad-hoc CDP measurement scratch scripts (canonical tooling = audit-styles.js + compare.ps1)
-_build/measure*.ps1
-# Generated deploy folder — rebuild with: pwsh -File _build\make-dist.ps1
-dist/
