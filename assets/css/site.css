@@ -60,7 +60,7 @@ p{margin:0 0 1em}
 .nav-bar{background:var(--teal);border-bottom:4px solid var(--gold)}
 .nav-bar .container{display:flex;align-items:center;height:56px}
 .nav-links{display:flex;align-items:center;gap:4px;list-style:none;margin:0;padding:0}
-.nav-links a{color:#fff;font-size:15px;padding:6px 18px;position:relative;display:inline-block}
+.nav-links a{color:#fff;font-size:15px;padding:11px 18px;position:relative;display:inline-block}
 .nav-links a:hover{opacity:.85}
 .nav-links a[aria-current="page"]::after{content:"";position:absolute;left:18px;right:18px;bottom:2px;height:1px;background:#fff}
 .nav-cta{margin-left:auto}
@@ -184,7 +184,7 @@ body.menu-open{overflow:hidden}
 .officer{text-align:center}
 .officer img{width:175px;height:175px;border-radius:50%;object-fit:cover;margin:0 auto 18px}
 .officer h3{font-size:1.2rem;margin-bottom:.1em}
-.officer .role{color:var(--gold);font-size:.95rem;margin-bottom:8px;font-family:var(--sans)}
+.officer .role{color:#8a6a2f;font-size:.95rem;margin-bottom:8px;font-family:var(--sans)}
 .officer .contact{color:var(--muted);font-size:.92rem}
 .officer .contact a:hover{color:var(--teal)}
 
@@ -207,7 +207,7 @@ body.menu-open{overflow:hidden}
 .prose h3{font-size:1.5rem;margin:1.3em 0 .35em}
 .prose p,.prose li{color:#2c3a39;font-size:1rem}
 .prose ul{padding-left:1.2em}
-.prose a{color:var(--teal);text-decoration:underline;overflow-wrap:anywhere}
+.prose a{color:#356b68;text-decoration:underline;overflow-wrap:anywhere}
 
 /* ---------- Footer ---------- */
 /* Live footer renders ALL text in the tan-gold (#e5c69c) on the dark teal */
@@ -260,6 +260,7 @@ body.menu-open{overflow:hidden}
   .footer-col-brand .footer-copy{max-width:340px}
   .footer-poweredby{margin-top:18px}
   .footer-disclaimers{text-align:left}
+  .footer-nav a{display:inline-block;padding:8px 0}
 }
 @media (max-width:600px){
   .loan-cards{grid-template-columns:1fr;max-width:420px}
