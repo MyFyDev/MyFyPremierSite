@@ -19,12 +19,25 @@
   --ink:#000000;           /* body text (live uses pure black rgb(0,0,0)) */
   --muted:#5c6b6b;
   --line:#e0e3e1;
+  --link:#356b68;          /* teal used for inline links on light backgrounds (.prose, .link) */
   --serif:'Playfair Display',Georgia,'Times New Roman',serif;
   --sans:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
   /* Live Wix section content column = ~91% of viewport, capped at 1600px,
      i.e. a fluid ~4.5% gutter each side (measured ~58px@1280, ~65px@1440, ~160px@1920). */
   --maxw:1600px;
   --colw:91.4%;
+  /* Single reading-width for flowing paragraph text (.lead, .prose) — narrower than
+     --maxw on purpose (unconstrained body text is hard to read on wide screens), but
+     ONE consistent value instead of the mismatched 780px/880px it used to be. */
+  --textw:820px;
+  /* Standard vertical rhythm used everywhere a button follows/precedes a paragraph,
+     and wherever an icon+heading group sits above body copy. 2rem on mobile
+     (overridden in the 750px breakpoint below) — keep every consumer of this token
+     in sync rather than hardcoding 2.5rem/2rem again. */
+  --space-block:2.5rem;
+  /* Shared height for the hero banner and the (image-less) dark intro band on the
+     Contact page, so the header sits at the same vertical position on every page. */
+  --hero-h:clamp(380px,46vw,520px);
 }
 
 /* ---------- Reset ---------- */
@@ -34,16 +47,32 @@ body{margin:0;font-family:var(--sans);color:var(--ink);background:#fff;
   font-size:16px;line-height:1.5;letter-spacing:.5px;overflow-x:hidden}
 img,svg,video{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
+/* Browsers don't inherit font into form controls by default (they use the OS's
+   UI font instead) — reset it here once so no <button>/<input>/<select> can
+   ever silently render off-brand again, instead of overriding it per-component. */
+button,input,textarea,select{font:inherit}
 /* Mouse click/focus must not change a link or button's look (the UA focus
    outline otherwise appears and persists during page-load navigation).
    Keyboard users still get a visible focus ring via :focus-visible. */
 a:focus,button:focus,.btn:focus,.btn-apply:focus{outline:none}
 a:focus:not(:focus-visible),button:focus:not(:focus-visible),.btn:focus:not(:focus-visible),.btn-apply:focus:not(:focus-visible){outline:none}
 a:focus-visible,button:focus-visible,.btn:focus-visible,.btn-apply:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+/* Skip link: off-screen until a keyboard user tabs to it, then slides into view.
+   #main-content is its landing target — tabindex="-1" makes it focusable (WCAG 2.4.1
+   Bypass Blocks) without adding it to the normal tab order; no visible ring needed
+   there since the scroll-into-view is itself the confirmation focus moved. */
+.skip-link{position:absolute;top:-48px;left:8px;z-index:200;background:var(--dark);color:#fff;padding:12px 20px;border-radius:4px;font-weight:700;transition:top .2s}
+.skip-link:focus{top:8px;outline:2px solid var(--gold);outline-offset:2px}
+main:focus{outline:none}
 /* Normalize :active so holding the click does not shift color/opacity/etc. */
 a:active,button:active,.btn:active,.btn-apply:active,.nav-links a:active,.footer-nav a:active,.mobile-overlay a:active{opacity:1}
 /* All headings: Playfair, regular weight (matches Wix), dark teal on light */
-h1,h2,h3,h4{font-family:var(--serif);font-weight:400;line-height:1.18;margin:0 0 .35em;color:var(--dark);letter-spacing:.4px}
+h1,h2,h3,h4,h5,h6{font-family:var(--serif);font-weight:400;line-height:1.18;margin:0 0 .35em;color:var(--dark);letter-spacing:.4px}
+/* Shared heading scale (desktop values; mobile overrides in the 750px breakpoint below) */
+h1{font-size:5.25rem}
+h2{font-size:2.75rem}
+h3{font-size:1.875rem}
+h4,h5,h6{font-size:1.4375rem}
 p{margin:0 0 1em}
 .container{width:var(--colw);max-width:var(--maxw);margin:0 auto;padding:0}
 
@@ -51,9 +80,19 @@ p{margin:0 0 1em}
 .site-header{background:var(--dark);position:relative;z-index:50}
 .header-top{display:flex;align-items:center;gap:26px;height:90px;width:var(--colw);max-width:var(--maxw);margin:0 auto;padding:0}
 .brand{display:flex;align-items:center}
-.brand svg{height:55px;width:auto}
+.brand img{height:55px;width:auto}
 .powered{display:flex;align-items:center;gap:10px;color:var(--gold-btn);font-size:13px;letter-spacing:.2px}
-.powered svg{height:37px;width:106px}
+.powered img{height:37px;width:106px}
+/* Logo links: SVG stays decorative (aria-hidden), the <a> carries the accessible
+   name; padding pads the hit area to the WCAG 2.5.5 44x44px touch-target target
+   without inflating the visual mark itself. Same pattern reused in the header
+   (.powered), the mobile menu (.mobile-powered) and the footer (.footer-mfu-group);
+   each sets its own padding (and, where the surrounding row has no spare room, a
+   matching negative margin to cancel it back out) because the space available
+   around the logo differs per context — the padding VALUES differ on purpose. */
+.mfu-link{display:inline-flex;align-items:center;justify-content:center;transition:opacity .2s}
+.mfu-link:hover{opacity:.8}
+.powered .mfu-link{padding:6px 8px;margin:-6px -8px}
 .header-spacer{flex:1}
 
 /* desktop teal nav bar */
@@ -64,7 +103,7 @@ p{margin:0 0 1em}
 .nav-links a:hover{opacity:.85}
 .nav-links a[aria-current="page"]::after{content:"";position:absolute;left:18px;right:18px;bottom:2px;height:1px;background:#fff}
 .nav-cta{margin-left:auto}
-.btn-apply{background:#fff;color:var(--dark);font-size:14px;font-weight:700;padding:11px 24px;border-radius:4px;display:inline-block;transition:background .2s,color .2s}
+.btn-apply{background:#fff;color:var(--dark);font-size:14px;font-weight:700;padding:.5rem 1rem;border-radius:4px;border:2px solid transparent;display:inline-block;text-align:center;transition:background .2s,color .2s}
 .btn-apply:hover{background:var(--gold-btn)}
 
 /* hamburger (mobile) */
@@ -78,45 +117,73 @@ p{margin:0 0 1em}
 .mobile-overlay.open{display:flex}
 .mobile-overlay a{color:#fff;font-family:var(--serif);font-size:28px}
 .mobile-overlay a:hover,.mobile-overlay a[aria-current="page"]{color:var(--gold)}
-.mobile-overlay .btn-apply{font-family:var(--sans);font-size:18px}
+.mobile-overlay .btn-apply{font-family:var(--sans);font-size:18px;color:var(--dark)}
+.mobile-overlay .btn-apply:hover{color:var(--dark)}
+.mobile-powered{position:absolute;left:0;right:0;bottom:28px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--gold-btn);font-size:12px;letter-spacing:.2px}
+.mobile-powered-row{display:flex;align-items:center;gap:0px}
+.mobile-powered-label{font-size:.95rem}
+.mobile-powered img{height:32px;width:auto}
+/* Padding (not a bigger mark) grows the tap target to the ~44px WCAG 2.5.5 minimum */
+.mobile-powered .mfu-link{padding:9px 12px}
+.mobile-powered-trustpilot{margin:0;font-size:1rem;font-family:var(--sans);letter-spacing:.2px}
+.mobile-powered-trustpilot a{color:var(--gold-btn);font-family:var(--sans);font-size:1rem;text-decoration:underline}
+.mobile-powered-trustpilot a:hover{color:#fff}
 body.menu-open{overflow:hidden}
+body.menu-open .site-header{z-index:130}
 
 /* ---------- Buttons ---------- */
-.btn{display:inline-block;font-size:15px;padding:13px 34px;border-radius:4px;cursor:pointer;border:0;text-align:center;transition:all .2s;letter-spacing:.4px}
+/* border reserved (transparent by default) on every variant so switching between
+   solid and outline styles, or hovering between them, never changes the button's
+   rendered size */
+.btn{display:inline-block;font-size:15px;padding:.5rem 1rem;border-radius:4px;cursor:pointer;border:2px solid transparent;text-align:center;transition:all .2s;letter-spacing:.4px}
+/* Hero CTAs get taller padding than every other button on the site */
+.hero .btn{padding:.75rem 1rem}
 .btn-gold{background:var(--gold-btn);color:var(--dark)}
 .btn-gold:hover{background:#d9b585}
 .btn-ghost{background:#fff;color:var(--dark)}
 .btn-ghost:hover{background:var(--gold-btn)}
+.btn-outline{background:transparent;border-color:#e5c69c;color:var(--dark)}
+.btn-outline:hover{background-color:#e5c69c}
 
 /* ---------- Hero ---------- */
-.hero{position:relative;min-height:clamp(380px,46vw,520px);display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;overflow:hidden}
+.hero{position:relative;min-height:var(--hero-h);display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;overflow:hidden}
 .hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,25,25,.56),rgba(10,25,25,.46));z-index:1}
 .hero-inner{position:relative;z-index:2;padding:40px 0;width:var(--colw);max-width:var(--maxw);margin:0 auto}
-.hero-title{font-size:clamp(2.1rem,5.7vw,4.55rem);font-weight:400;color:#fff;margin:0 0 .12em;letter-spacing:normal;text-shadow:0 2px 16px rgba(0,0,0,.3);overflow-wrap:break-word}
-.hero-sub{font-family:var(--sans);font-size:clamp(1rem,2.2vw,1.1rem);font-weight:400;margin:0 0 1.5em;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.hero-title{font-weight:400;color:#fff;margin:0 0 .12em;letter-spacing:normal;text-shadow:0 2px 16px rgba(0,0,0,.3);overflow-wrap:break-word}
+.hero-sub{font-family:var(--sans);font-size:clamp(1rem,2.2vw,1.1rem);font-weight:400;margin:0 0 var(--space-block);text-shadow:0 1px 8px rgba(0,0,0,.35)}
 
 /* ---------- Sections ---------- */
 .section{padding:clamp(46px,6vw,64px) 0}
 .section-dark{background:var(--dark);color:#e9efed}
-.section-dark h1,.section-dark h2,.section-dark h3,.section-dark h4{color:#fff}
+/* Contact page has no hero image, but its dark intro band should still match the
+   hero height/vertical-centering used on the other pages, at every screen size */
+.section-dark.center{min-height:var(--hero-h);display:flex;align-items:center;justify-content:center}
+.section-dark h1,.section-dark h2,.section-dark h3,.section-dark h4,.section-dark h5,.section-dark h6{color:#fff}
 .section-tint{background:#f4f6f5}
-/* Every section-title H2 (incl. .sm and the Features section) shares ONE size for uniform H2 sizing */
-.section-title{text-align:center;font-size:clamp(1.85rem,4.6vw,2.5rem);font-weight:400;margin:0 0 .1em;overflow-wrap:break-word}
+/* Every section-title (incl. .sm and the Features section) defers to the shared h1/h2 scale for uniform sizing */
+.section-title{text-align:center;font-weight:400;margin:0 0 .1em;overflow-wrap:break-word}
 .divider{width:50px;height:3px;background:var(--gold);border:0;margin:16px auto 40px}
-.lead{max-width:780px;margin:0 auto;text-align:center;color:var(--ink);font-size:1rem}
+.lead{max-width:var(--textw);margin:0 auto;text-align:center;color:var(--ink);font-size:1rem}
+/* Two .lead paragraphs stacked in the same section (e.g. the Officers intro) get a
+   small gap between them — scope it to the sibling pattern instead of an inline style. */
+.lead + .lead{margin-top:14px}
 .section-dark .lead{color:#dbe4e2}
 .center{text-align:center}
-.mt-btn{margin-top:32px}
+.link{color:var(--link)}
+.mt-btn{margin-top:var(--space-block)}
 
 /* ---------- Features (stacked 2-column rows on a dark watermark bg) ---------- */
-.section-features{background:#183131 url('../img/25a1a4_de9ba1f456934feca2c9226460e36bcc~mv2.png') center/cover no-repeat;color:#fff}
+/* Matches Figma node 1:202 exactly: mark centered, full section height, width auto (not stretched/cover) */
+.section-features{background:#183131 url('../img/features-watermark.svg') center/auto 100% no-repeat;color:#fff}
 .section-features .section-title{color:#fff}
-.features{max-width:1100px;margin:26px auto 0;display:grid;gap:0}
-.feature{display:grid;grid-template-columns:1fr 1.25fr;gap:50px;align-items:center;padding:32px 4px;border-bottom:1px solid rgba(255,255,255,.16)}
+.features{margin:26px 0 0;display:grid;gap:0}
+.feature{display:grid;grid-template-columns:1fr 1.25fr;gap:var(--space-block) 50px;align-items:center;padding:32px 4px;border-bottom:1px solid rgba(255,255,255,.16)}
 .feature-head{display:flex;align-items:center;gap:18px}
-.feature .feat-icon{width:36px;height:36px;color:var(--gold);flex:none;margin:0}
-.feature h3{font-size:1.875rem;margin:0;color:#fff}
+/* Shared with .feat3-head below (Yacht page reuses the same 3 icons) — the gold
+   fill is baked into each icon-*.svg file itself, not set via CSS. */
+.feat-icon{width:36px;height:36px;flex:none;margin:0}
+.feature h3{margin:0;color:#fff}
 .feature-desc{color:#fff;font-size:.95rem;margin:0}
 .feature-desc a{color:#fff;text-decoration:underline}
 
@@ -124,36 +191,38 @@ body.menu-open{overflow:hidden}
 /* minmax(0,1fr) + min-width:0 let the columns/items shrink below their content's
    intrinsic min-width on narrow screens (default grid min-width is auto), so a long
    word can never force the grid wider than the viewport. */
-.feat3{max-width:1100px;margin:26px auto 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:44px;align-items:start}
+.feat3{margin:26px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:44px;align-items:start}
 .feat3-item{min-width:0}
-.feat3-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;min-width:0}
-.feat3-head .feat-icon{width:34px;height:34px;color:var(--gold);flex:none;margin:0}
-.feat3-item h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;color:var(--dark);margin:0}
+.feat3-head{display:flex;align-items:center;gap:12px;margin-bottom:var(--space-block);min-width:0}
+.feat3-item h3{font-family:var(--serif);font-weight:400;color:var(--dark);margin:0}
 .feat3-desc{color:#3a3a3a;font-size:1rem;line-height:1.6;text-align:left;margin:0}
 .feat3-desc a{color:var(--teal);text-decoration:underline}
 
-/* ---------- Yacht: faint diamond watermark on the dark Experience band ---------- */
-/* Scoped (does NOT touch shared .section-dark, which the contact page uses) */
-.section-dark.exp-watermark{background:var(--dark) url('../img/25a1a4_de9ba1f456934feca2c9226460e36bcc~mv2.png') center/cover no-repeat}
+/* ---------- Yacht: brand mark watermark on the dark Experience band ---------- */
+/* Scoped (does NOT touch shared .section-dark, which the contact page uses).
+   Matches Figma node 3:2927 exactly: mark centered, full section height, width auto (not stretched/cover) */
+.section-dark.exp-watermark{background:var(--dark) url('../img/experience-watermark.svg') center/auto 100% no-repeat}
+/* Yacht: brand mark watermark behind "Our Process is Easy" — matches Figma node 3:3093 exactly:
+   bg rgba(218,208,195,.1), mark centered, full section height, width auto (not stretched/cover) */
+.section-tint.process-watermark{background:rgba(218,208,195,.1) url('../img/process-watermark.svg') center/auto 100% no-repeat}
 
 /* ---------- Testimonials ---------- */
+/* Same structure everywhere: quote, then the icon, then the name */
 .testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:22px}
 .testimonial{text-align:center;padding:0 6px}
-.testimonial .mark{font-family:var(--serif);font-size:3.2rem;color:var(--gold);line-height:.1;display:block;margin:10px 0 18px}
-.testimonial .quote{color:var(--ink);font-size:1rem;margin-bottom:16px}
-.testimonial .who{font-family:var(--serif);font-weight:400;font-size:1.375rem;color:var(--dark)}
-/* Yacht only: gold quote-mark sits BELOW the quote / ABOVE the name */
-.testimonials-yacht .testimonial .mark{margin:14px 0 6px}
+.testimonial .quote{color:var(--ink);font-size:1rem;margin-bottom:1.5rem}
+.testimonial .mark{width:1.5rem;height:1.5rem;margin:0 auto 1.5rem}
+.testimonial .who{font-family:var(--serif);font-weight:400;font-size:1.375rem;color:var(--dark);margin-bottom:0}
 
 /* ---------- Program (yacht) ---------- */
-.program-list{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 36px;max-width:940px;margin:10px auto 0;list-style:none;padding:0}
+.program-list{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 36px;margin:10px 0 0;list-style:none;padding:0}
 .program-list li{display:flex;align-items:center;gap:12px;color:var(--ink)}
-.program-list svg{width:20px;height:20px;color:var(--gold);flex:none}
-.note{text-align:center;color:var(--muted);font-size:.95rem;margin-top:32px}
+.program-list img{width:20px;height:20px;flex:none}
+.note{text-align:center;color:var(--muted);font-size:.95rem;margin-top:var(--space-block)}
 
 /* ---------- Loan cards (yacht) — 5 cards, 3 per row ---------- */
-.loan-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;max-width:1100px;margin:0 auto;justify-content:center}
-.loan-card{display:flex;flex-direction:column;min-width:0;border:1px solid var(--line);border-radius:8px;padding:28px 30px;background:#fff;box-shadow:0 8px 24px rgba(20,40,40,.06)}
+.loan-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;justify-content:center}
+.loan-card{position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid var(--line);border-radius:8px;padding:28px 30px;background:#fff;box-shadow:0 8px 24px rgba(20,40,40,.06)}
 .loan-card .tier{color:var(--muted);font-size:.95rem;margin:0 0 4px}
 .loan-card .apr{font-family:var(--serif);font-weight:700;font-size:2rem;color:var(--dark);margin:0 0 2px}
 .loan-card .term-max{color:var(--muted);font-size:.85rem;margin:0}
@@ -162,6 +231,11 @@ body.menu-open{overflow:hidden}
 .loan-card .pay-amt{font-family:var(--serif);font-weight:700;font-size:1.5rem;color:var(--dark);margin:0}
 .loan-card .loan-apply{margin-top:auto;align-self:flex-end;padding-top:18px;color:var(--teal);font-size:.95rem;font-weight:700;text-decoration:underline}
 .loan-card .loan-apply:hover{opacity:.8}
+/* Stretched link: the real "Apply Now" anchor's hit area is expanded to cover the
+   whole card via ::after, so the card is clickable everywhere but there's still only
+   one real <a> (no nested links). Scoped to a.loan-apply so the disabled placeholder
+   cards (a <span>, not a link) are never made to look clickable. */
+.loan-card a.loan-apply::after{content:"";position:absolute;inset:0}
 /* Placeholder cards — UNMISTAKABLY not real offers (dashed, dimmed, flagged) */
 .loan-card.placeholder{border:2px dashed #b9c2c1;box-shadow:none;background:#fbfcfc;opacity:.7}
 .loan-card.placeholder .ph-flag{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin:0 0 10px}
@@ -169,11 +243,13 @@ body.menu-open{overflow:hidden}
 .loan-card .loan-apply.is-disabled{color:var(--muted);text-decoration:none;cursor:default;font-weight:400}
 
 /* ---------- Process steps ---------- */
+/* Number sits inline with the heading (row 1); description spans full width below (row 2) —
+   mirrors the icon+heading layout used in .feature-head/.feat3-head elsewhere on the site. */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:22px}
-.step{text-align:center}
-.step .num{width:56px;height:56px;border:2px solid var(--gold);color:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:1.5rem;margin:0 auto 18px}
-.step h3{font-size:1.5rem}
-.step p{color:#3a3a3a;font-size:1rem}
+.step{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:14px;row-gap:var(--space-block);text-align:left}
+.step .num{grid-column:1;grid-row:1;width:32px;height:32px;flex:none;margin:0}
+.step h3{grid-column:2;grid-row:1;margin:0}
+.step p{grid-column:1 / -1;grid-row:2;color:#3a3a3a;font-size:1rem;margin:0}
 
 /* ---------- Trust badges ---------- */
 .trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:54px;margin-top:12px}
@@ -183,7 +259,7 @@ body.menu-open{overflow:hidden}
 .officers{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:24px}
 .officer{text-align:center}
 .officer img{width:175px;height:175px;border-radius:50%;object-fit:cover;margin:0 auto 18px}
-.officer h3{font-size:1.2rem;margin-bottom:.1em}
+.officer h3{margin-bottom:.1em}
 .officer .role{color:#8a6a2f;font-size:.95rem;margin-bottom:8px;font-family:var(--sans)}
 .officer .contact{color:var(--muted);font-size:.92rem}
 .officer .contact a:hover{color:var(--teal)}
@@ -196,37 +272,51 @@ body.menu-open{overflow:hidden}
 .field input,.field textarea{font-family:var(--sans);font-size:1rem;padding:12px 14px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
 .field input:focus,.field textarea:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 .field textarea{min-height:120px;resize:vertical}
+/* Spam-bot trap: !important is intentional so this field can never be made visible by a
+   later, more specific rule (a bot filling in a "visible" field is exactly what this catches). */
 .honeypot{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
 .privacy-note{color:var(--muted);font-size:.85rem;margin-top:4px}
 
 /* ---------- Prose (privacy / terms) ---------- */
-.prose{max-width:880px;margin:0 auto;overflow-wrap:break-word}
-/* Live legal-page headings: H1 ~44px, H2 ~40px, H3 ~25px, all left-aligned */
-.prose h1{font-size:clamp(2rem,3.6vw,2.75rem);text-align:left;margin-bottom:.5em}
-.prose h2{font-size:clamp(1.85rem,4.6vw,2.5rem);margin:1.4em 0 .4em}
-.prose h3{font-size:1.5rem;margin:1.3em 0 .35em}
+/* Wider than --textw on purpose: at --textw the all-caps h1 (privacy/terms) wrapped
+   to 3 lines. Legal pages lean on short clauses/lists more than dense prose, so the
+   readability cost of the extra width is small and worth it for the headline. */
+.prose{max-width:1000px;margin:0 auto;overflow-wrap:break-word}
+/* Legal-page headings defer to the shared h1/h2/h3 scale; left-aligned here vs. centered elsewhere */
+.prose h1{text-align:left;margin-bottom:.5em}
+.prose h2{margin:1.4em 0 .4em}
+.prose h3{margin:1.3em 0 .35em}
 .prose p,.prose li{color:#2c3a39;font-size:1rem}
 .prose ul{padding-left:1.2em}
-.prose a{color:#356b68;text-decoration:underline;overflow-wrap:anywhere}
+.prose a{color:var(--link);text-decoration:underline;overflow-wrap:anywhere}
 
 /* ---------- Footer ---------- */
 /* Live footer renders ALL text in the tan-gold (#e5c69c) on the dark teal */
 .site-footer{background:var(--dark);color:var(--gold-btn);padding:50px 0 34px}
-/* Top band: 3 columns matching live — links (left) | address + powered-by logo (center) | MyFy logo + copyright (right) */
-.footer-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px;align-items:start}
+/* Top band: 2 columns — links (left) | address (far right) */
+.footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
 .footer-nav{list-style:none;margin:0;padding:0;display:grid;gap:9px}
 .footer-nav a{color:var(--gold-btn);font-size:1rem}
 .footer-nav a:hover{color:#fff}
-.footer-col-center{text-align:center}
-.footer-col-center address{font-style:normal;font-size:1rem;line-height:1.7;margin:0}
-.footer-poweredby{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:34px}
+/* Far-right column: address, right-aligned */
+.footer-col-brand{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.footer-col-brand address{font-style:normal;font-size:1rem;line-height:1.7;margin:0}
+.footer-phone{font-size:1rem;margin:8px 0 0}
+.footer-col-brand address a:hover,.footer-phone a:hover{color:#fff}
+/* Centered below the grid: MyFy Premier logo + copyright, then (3rem below) "Powered by" + MFUSA logo + Trustpilot */
+.footer-poweredby{display:flex;flex-direction:column;align-items:center;margin-top:30px;padding:2rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.16)}
+.footer-brand-group{display:flex;flex-direction:column;align-items:center;gap:2px}
+.footer-mfu-group{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:3rem}
+.footer-mfu-row{display:flex;align-items:center;gap:0px}
+.footer-mfu-group img{height:37px;width:auto}
+.footer-mfu-group .mfu-link{padding:4px 6px}
 .footer-poweredby-label{font-size:.95rem}
-.footer-poweredby svg{height:50px;width:auto}
-.footer-col-brand{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:18px}
-.footer-col-brand svg{height:56px;width:auto}
-.footer-col-brand .footer-copy{font-size:.75rem;line-height:1.5;margin:0;max-width:230px}
-/* Trustpilot — centered below the columns, as on live */
-.footer-trustpilot{text-align:center;font-size:1rem;margin:28px 0 0}
+.footer-logo-link{display:inline-flex;margin-bottom:1.5rem;transition:opacity .2s}
+.footer-logo-link:hover{opacity:.8}
+.footer-logo-link img{height:78px;width:auto}
+.footer-poweredby .footer-copy{font-size:.75rem;line-height:1.5;margin:0;max-width:340px;text-align:center}
+/* Trustpilot — grouped inside the "Powered by" lockup */
+.footer-trustpilot{text-align:center;font-size:.95rem;margin:2px 0 0}
 .footer-trustpilot a{color:var(--gold-btn);text-decoration:underline}
 .footer-trustpilot a:hover{color:#fff}
 /* Disclaimers — full-width, left-aligned, at the very bottom */
@@ -244,12 +334,22 @@ body.menu-open{overflow:hidden}
   .contact-grid{grid-template-columns:1fr;gap:36px}
 }
 @media (max-width:750px){
+  h1{font-size:4rem}
+  h2{font-size:2.75rem}
+  h3{font-size:1.5625rem}
+  h4,h5,h6{font-size:1.25rem}
   .nav-bar{display:none}
+  /* Nav bar (and its gold divider) is hidden on mobile — keep the divider on the
+     header itself so it still shows between the header and the hero. */
+  .site-header{border-bottom:4px solid var(--gold)}
   .hamburger{display:flex}
   .header-top{padding-right:74px}
   .powered{display:none}
   .testimonials,.steps,.officers,.program-list{grid-template-columns:1fr;gap:28px}
-  .feature{grid-template-columns:1fr;gap:12px;text-align:left}
+  /* Every consumer of --space-block (.hero-sub, .mt-btn, .note, .feature, .feat3-head,
+     .step — see the token comment in :root) drops from 2.5rem to 2rem together. */
+  :root{--space-block:2rem}
+  .feature{grid-template-columns:1fr;text-align:left}
   .feat3{grid-template-columns:1fr;gap:30px}
   .officer img{width:150px;height:150px}
   .trust{gap:34px}
@@ -257,14 +357,20 @@ body.menu-open{overflow:hidden}
   /* Footer stacks into one centered column */
   .footer-grid{grid-template-columns:1fr;gap:32px;justify-items:center;text-align:center}
   .footer-col-brand{align-items:center;text-align:center}
-  .footer-col-brand .footer-copy{max-width:340px}
-  .footer-poweredby{margin-top:18px}
   .footer-disclaimers{text-align:left}
-  .footer-nav a{display:inline-block;padding:8px 0}
+  .footer-nav{gap:1rem}
+  .footer-nav a{display:inline-block;padding:0}
+  /* Buttons go full width on mobile. .btn/.btn-apply always live inside an
+     already-gutter-matched wrapper (hero-inner, .container, .center, .contact-form),
+     so 100% here means "full column width", not edge-to-edge. The mobile nav overlay
+     is the one exception — it has no side padding of its own, so give it the same
+     gutter as --colw before its Apply Now button stretches to fill it. */
+  .btn,.btn-apply{width:100%}
+  .mobile-overlay{padding:0 4.3%}
 }
 @media (max-width:600px){
   .loan-cards{grid-template-columns:1fr;max-width:420px}
 }
 @media (max-width:420px){
-  .brand svg{height:34px}
+  .brand img{height:48px}
 }
