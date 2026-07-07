@@ -170,7 +170,7 @@ body.menu-open .site-header{z-index:130}
 .lead + .lead{margin-top:14px}
 .section-dark .lead{color:#dbe4e2}
 .center{text-align:center}
-.link{color:var(--link)}
+.link{color:var(--link);text-decoration:underline}
 .mt-btn{margin-top:var(--space-block)}
 
 /* ---------- Features (stacked 2-column rows on a dark watermark bg) ---------- */
@@ -243,25 +243,33 @@ body.menu-open .site-header{z-index:130}
 .loan-card .loan-apply.is-disabled{color:var(--muted);text-decoration:none;cursor:default;font-weight:400}
 
 /* ---------- Process steps ---------- */
-/* Number sits inline with the heading (row 1); description spans full width below (row 2) —
-   mirrors the icon+heading layout used in .feature-head/.feat3-head elsewhere on the site. */
+/* Icon+heading row (.step-head), then description below — same flex structure as
+   .feature-head/.feat3-head elsewhere on the site, not CSS Grid, for consistency.
+   Deliberately NOT using --space-block for the row gap: this is a compact 3-up card,
+   and the standard 2.5rem headline-to-content gap left the paragraph looking
+   detached from its own heading. */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:22px}
-.step{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:14px;row-gap:var(--space-block);text-align:left}
-.step .num{grid-column:1;grid-row:1;width:32px;height:32px;flex:none;margin:0}
-.step h3{grid-column:2;grid-row:1;margin:0}
-.step p{grid-column:1 / -1;grid-row:2;color:#3a3a3a;font-size:1rem;margin:0}
+.step{display:flex;flex-direction:column;row-gap:16px;text-align:left}
+.step-head{display:flex;align-items:center;gap:14px}
+.step .num{width:32px;height:32px;flex:none;margin:0}
+.step h3{margin:0}
+.step p{color:#3a3a3a;font-size:1rem;margin:0}
 
 /* ---------- Trust badges ---------- */
-.trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:54px;margin-top:12px}
+/* column-gap is the space between logos on the same line; row-gap (kept small and
+   constant) only ever matters if logos wrap to a second line, so a wrap never opens
+   up a huge vertical gap the way a single "gap:145px" shorthand would. */
+.trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:145px;row-gap:34px;margin-top:12px}
 .trust img{height:56px;width:auto;object-fit:contain}
 
 /* ---------- Officers ---------- */
-.officers{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:24px}
+.officers{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:64px}
 .officer{text-align:center}
 .officer img{width:175px;height:175px;border-radius:50%;object-fit:cover;margin:0 auto 18px}
 .officer h3{margin-bottom:.1em}
 .officer .role{color:#8a6a2f;font-size:.95rem;margin-bottom:8px;font-family:var(--sans)}
 .officer .contact{color:var(--muted);font-size:.92rem}
+.officer .contact a{text-decoration:underline}
 .officer .contact a:hover{color:var(--teal)}
 
 /* ---------- Contact form ---------- */
@@ -298,6 +306,9 @@ body.menu-open .site-header{z-index:130}
 .footer-nav{list-style:none;margin:0;padding:0;display:grid;gap:9px}
 .footer-nav a{color:var(--gold-btn);font-size:1rem}
 .footer-nav a:hover{color:#fff}
+/* Underline only the link matching the page currently being viewed, same signal
+   as the header nav's current-page indicator, just via text-decoration here. */
+.footer-nav a[aria-current="page"]{text-decoration:underline}
 /* Far-right column: address, right-aligned */
 .footer-col-brand{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
 .footer-col-brand address{font-style:normal;font-size:1rem;line-height:1.7;margin:0}
@@ -327,8 +338,21 @@ body.menu-open .site-header{z-index:130}
 /* ============================================================
    Responsive
    ============================================================ */
+/* .trust needs its own, wider breakpoint than the other equal-item-row blocks below:
+   it holds 4 variable-width logos (not 3 same-size cards), so at column-gap:145px the
+   row's content is ~1071px wide — wider than the ~900-1200px container this site
+   renders at on a laptop/tablet, which forced the 4th (BBB) logo to wrap. Only
+   column-gap changes here; row-gap is already a constant 34px on the base rule. */
+@media (max-width:1300px){
+  .trust{column-gap:9%}
+}
+/* .officers is 4-up and needs more room to stay in one row than the 3-up blocks
+   below, so it gets its own, wider breakpoint before dropping to 2 columns. */
+@media (max-width:1260px){
+  .officers{grid-template-columns:1fr 1fr;gap:34px}
+}
 @media (max-width:900px){
-  .testimonials,.steps,.officers{grid-template-columns:1fr 1fr;gap:34px}
+  .testimonials,.steps{grid-template-columns:1fr 1fr;gap:34px}
   .loan-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   .program-list{grid-template-columns:1fr 1fr}
   .contact-grid{grid-template-columns:1fr;gap:36px}
@@ -346,13 +370,13 @@ body.menu-open .site-header{z-index:130}
   .header-top{padding-right:74px}
   .powered{display:none}
   .testimonials,.steps,.officers,.program-list{grid-template-columns:1fr;gap:28px}
+  .officers{margin-top:48px}
   /* Every consumer of --space-block (.hero-sub, .mt-btn, .note, .feature, .feat3-head,
      .step — see the token comment in :root) drops from 2.5rem to 2rem together. */
   :root{--space-block:2rem}
   .feature{grid-template-columns:1fr;text-align:left}
   .feat3{grid-template-columns:1fr;gap:30px}
   .officer img{width:150px;height:150px}
-  .trust{gap:34px}
   .trust img{height:44px}
   /* Footer stacks into one centered column */
   .footer-grid{grid-template-columns:1fr;gap:32px;justify-items:center;text-align:center}
