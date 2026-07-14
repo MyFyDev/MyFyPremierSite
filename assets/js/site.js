@@ -4,6 +4,12 @@
   var overlay = document.getElementById('mobile-overlay');
   if (!btn || !overlay) return;
 
+  // Background regions to hide from assistive tech while the modal menu is open.
+  // The <header> is deliberately NOT included: it holds the hamburger, which is
+  // the menu's close control and must stay operable. main + footer are the
+  // background content a screen reader should not be able to wander into.
+  var background = [document.getElementById('main-content'), document.querySelector('.site-footer')];
+
   function focusable() {
     return overlay.querySelectorAll('a, button');
   }
@@ -16,6 +22,11 @@
     btn.classList.toggle('open', open);
     document.body.classList.toggle('menu-open', open);
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    background.forEach(function (el) {
+      if (!el) return;
+      if (open) { el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true'); }
+      else { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
+    });
     if (open) {
       var items = focusable();
       if (items.length) items[0].focus();
@@ -25,6 +36,13 @@
   }
 
   btn.addEventListener('click', function () { set(!overlay.classList.contains('open')); });
+
+  // If the viewport grows past the mobile breakpoint while the overlay is open,
+  // CSS hides the hamburger (the only visible control), which would strand the
+  // menu open over the desktop layout with scroll still locked. Force-close it.
+  window.matchMedia('(min-width: 751px)').addEventListener('change', function (e) {
+    if (e.matches && overlay.classList.contains('open')) set(false);
+  });
   overlay.querySelectorAll('a').forEach(function (a) {
     a.addEventListener('click', function () { set(false); });
   });
