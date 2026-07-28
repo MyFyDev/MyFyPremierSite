@@ -6,7 +6,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t4g.small
-      ImageId: ami-0d4439d3d3a3567af
+      ImageId: ami-060945ab3b17e716d
       SubnetId: !ImportValue test-AppSubnet
       SecurityGroupIds:
         - !ImportValue test-AppSecurityGroup
