@@ -5,7 +5,7 @@ Resources:
   stgMyFyPremierSite:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.small
+      InstanceType: t4g.small
       ImageId: ami-0d4439d3d3a3567af
       SubnetId: !ImportValue test-AppSubnet
       SecurityGroupIds:
