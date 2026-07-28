@@ -1,0 +1,15 @@
+{
+  "name": "myfypremiersite",
+  "version": "1.0.0",
+  "description": "MyFy Premier marketing site — static file server",
+  "author": "Daniel Cox",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "./node_modules/.bin/dotenvx run -- node server.js"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^2.19.0",
+    "utilities": "bitbucket:myfy/utilities"
+  }
+}
