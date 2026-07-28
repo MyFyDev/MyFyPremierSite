@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: End-to-end deployment for MyFy Premier Site
+
+Resources:
+  stgMyFyPremierSite:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.small
+      ImageId: ami-0d4439d3d3a3567af
+      SubnetId: !ImportValue test-AppSubnet
+      SecurityGroupIds:
+        - !ImportValue test-AppSecurityGroup
+      KeyName: daniel-ec2-instance-ssh-key
+      Tags:
+        - Key: Name
+          Value: stgMyFyPremierSite
+
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref stgMyFyPremierSite
+      EIP: "100.48.27.187"
