@@ -1,4 +1,16 @@
-node_modules/
-logs/
-.env.keys
-.env*.local
+node_modules/*
+*.swp
+*.swo
+.git/*
+
+# only encrypted envs allowed — .env.keys holds the plaintext private keys and
+# must never be committed
+.env*
+**/.env*
+!/.env
+!/.env.production
+
+keys/*
+logs/*
+scratch/*
+*.csv
