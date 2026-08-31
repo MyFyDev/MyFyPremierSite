@@ -5,11 +5,12 @@
   "author": "Daniel Cox",
   "private": true,
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "./node_modules/.bin/dotenvx run -- node server.js"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^2.19.0",
-    "utilities": "bitbucket:myfy/utilities"
+    "utilities": "bitbucket:myfy/utilities#a4517e377afbfd40320909ebdaf1cccbe67a18a1"
   }
 }

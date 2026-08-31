@@ -1,11 +1,14 @@
-const http = require('http');
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const zlib = require('zlib');
+import http from 'node:http';
+import https from 'node:https';
+import fs from 'node:fs';
+import path from 'node:path';
+import zlib from 'node:zlib';
 
-const logging = require('utilities/logging');
-const getMimeType = require('utilities/general/mime-types.js');
+// utilities is ESM as of a4517e3 and both of these are default exports. The
+// package's exports map covers ./logging explicitly and ./general/mime-types.js
+// through its ./* catch-all.
+import logging from 'utilities/logging';
+import getMimeType from 'utilities/general/mime-types.js';
 
 const dm = logging.colors.dim;
 const hl = logging.colors.whiteBright;
@@ -31,7 +34,10 @@ const keys = {
 }
 const hasCerts = keys.key.length > 0 && keys.cert.length > 0;
 
-const ROOT = __dirname;
+// __dirname does not exist in an ES module. import.meta.dirname is the direct
+// replacement (node 20.11+), and it matters here beyond convenience: ROOT is
+// the web root, and every allowlist decision in resolve() is made against it.
+const ROOT = import.meta.dirname;
 
 // The repo root doubles as the web root, so reachability is an ALLOWLIST rather
 // than a denylist — .env (which holds SSL_KEY, SSL_CERT and every other secret),
@@ -51,8 +57,12 @@ const ASSET_CACHE_SECONDS = process.env.ASSET_CACHE_SECONDS || 3600;
 // would only get bigger, so the list is an allowlist rather than an exclusion.
 const COMPRESSIBLE = /^(text\/|image\/svg\+xml|application\/(json|xml|javascript))/;
 
-if (require.main === module) start();
-else module.exports = { start, handler };
+// `require.main === module` has no ESM equivalent. import.meta.filename is the
+// path node puts in argv[1] when this file is the entry point, so the server
+// still starts when run directly and stays importable for a test.
+if (process.argv[1] === import.meta.filename) start();
+
+export { start, handler };
 
 function start() {
   http.createServer(hasCerts ? redirectToHttps : handler).listen(HTTP_PORT, () => {
