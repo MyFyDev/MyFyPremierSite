@@ -7,10 +7,18 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "./node_modules/.bin/dotenvx run -- node server.js"
+    "start": "./node_modules/.bin/dotenvx run -- node server.js",
+    "test": "npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^2.19.0",
     "utilities": "bitbucket:myfy/utilities#a4517e377afbfd40320909ebdaf1cccbe67a18a1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
   }
 }

@@ -9,8 +9,11 @@ node_modules/*
 **/.env*
 !/.env
 !/.env.production
-
 keys/*
 logs/*
 scratch/*
 *.csv
+node_modules/
+test-results/
+playwright-report/
+playwright/.cache/
