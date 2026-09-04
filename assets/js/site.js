@@ -77,3 +77,37 @@
     heroVideo.removeAttribute('loop');
   }
 })();
+
+/* Contact form phone field: keep it to exactly 10 digits.
+   The input's pattern attribute is the real guard (it still works with JS off);
+   this just makes the field behave while you type — non-digits are dropped, the
+   11th digit is refused, and the number formats itself as (502) 498-4212.
+   Reformatting is skipped when the caret is mid-string, since rewriting the value
+   there would fling the cursor to the end while someone is correcting a typo. */
+(function () {
+  var phone = document.getElementById('f-phone');
+  if (!phone) return;
+
+  function format(digits) {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return '(' + digits.slice(0, 3) + ') ' + digits.slice(3);
+    return '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6);
+  }
+
+  phone.addEventListener('input', function () {
+    var atEnd = phone.selectionStart === phone.value.length;
+    var digits = phone.value.replace(/\D/g, '').slice(0, 10);
+    if (!atEnd) return;
+    phone.value = format(digits);
+  });
+
+  // A pasted "+1 502.498.4212" or "1-502-498-4212" should land as 10 digits, not fail
+  // validation silently. Runs after the paste lands so we can read the merged value.
+  phone.addEventListener('paste', function () {
+    setTimeout(function () {
+      var digits = phone.value.replace(/\D/g, '');
+      if (digits.length === 11 && digits.charAt(0) === '1') digits = digits.slice(1);
+      phone.value = format(digits.slice(0, 10));
+    }, 0);
+  });
+})();

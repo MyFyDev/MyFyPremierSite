@@ -107,12 +107,11 @@ p{margin:0 0 1em}
 .btn-apply:hover{background:var(--gold-btn)}
 
 /* hamburger (mobile) */
-.hamburger{display:none;position:absolute;top:24px;right:18px;z-index:120;width:44px;height:44px;flex-direction:column;justify-content:center;gap:5px;background:var(--gold-btn);border:0;border-radius:8px;cursor:pointer;padding:11px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
-.hamburger span{display:block;height:2px;width:100%;background:var(--dark);border-radius:2px;transition:transform .25s,opacity .2s}
-.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger{display:none;position:absolute;top:24px;right:18px;z-index:120;width:44px;height:44px;flex-direction:column;justify-content:center;gap:5px;background:transparent;border:0;cursor:pointer;padding:11px}
+.hamburger span{display:block;height:3px;width:100%;background:var(--gold-btn);border-radius:2px;transition:transform .25s,opacity .2s}
+.hamburger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}
 .hamburger.open span:nth-child(2){opacity:0}
-.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.hamburger.open{background:#fff}
+.hamburger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
 .mobile-overlay{position:fixed;inset:0;z-index:110;background:var(--dark);display:none;flex-direction:column;align-items:center;justify-content:center;gap:30px}
 .mobile-overlay.open{display:flex}
 .mobile-overlay a{color:#fff;font-family:var(--serif);font-size:28px}
@@ -221,7 +220,7 @@ body.menu-open .site-header{z-index:130}
 .note{text-align:center;color:var(--muted);font-size:.95rem;margin-top:var(--space-block)}
 
 /* ---------- Loan cards (yacht) — 5 cards, 3 per row ---------- */
-.loan-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;justify-content:center}
+.loan-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;justify-content:center}
 .loan-card{position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid var(--line);border-radius:8px;padding:28px 30px;background:#fff;box-shadow:0 8px 24px rgba(20,40,40,.06)}
 .loan-card .tier{color:var(--muted);font-size:.95rem;margin:0 0 4px}
 .loan-card .apr{font-family:var(--serif);font-weight:700;font-size:2rem;color:var(--dark);margin:0 0 2px}
@@ -350,6 +349,7 @@ body.menu-open .site-header{z-index:130}
    below, so it gets its own, wider breakpoint before dropping to 2 columns. */
 @media (max-width:1260px){
   .officers{grid-template-columns:1fr 1fr;gap:34px}
+  .loan-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:900px){
   .testimonials,.steps{grid-template-columns:1fr 1fr;gap:34px}
