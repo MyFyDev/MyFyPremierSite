@@ -12,11 +12,12 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "postinstall": "git config core.hooksPath ./node_modules/utilities/hooks || true"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^2.19.0",
-    "utilities": "bitbucket:myfy/utilities#a4517e377afbfd40320909ebdaf1cccbe67a18a1"
+    "utilities": "bitbucket:myfy/utilities#6c6acb81fbccd088e64a34774f1734a95e4f9a76"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"
