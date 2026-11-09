@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^2.19.0",
-    "utilities": "bitbucket:myfy/utilities#f34c82e2301daa66f9053257202340f6c26bc35b"
+    "utilities": "github:MyFyDev/utilities#34f590d4a6444fbacb9b99eea391ea9ed2df5b6b"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"
