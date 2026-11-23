@@ -111,3 +111,71 @@
     }, 0);
   });
 })();
+
+/* Contact form: submit in the background and show progress on the button.
+   The form's own action/method still work with JS off (a plain POST to FormSubmit);
+   this swaps that for FormSubmit's JSON endpoint so the visitor stays on the page.
+   The button spins from the moment the request leaves until it settles -- success,
+   a rejected submission, a network failure, or the timeout -- and is always restored
+   in one place (finally), so no outcome can leave it spinning. */
+(function () {
+  var form = document.querySelector('.contact-form');
+  if (!form || !window.fetch || !window.FormData) return;
+
+  var button = form.querySelector('button[type="submit"]');
+  var status = form.querySelector('.form-status');
+  if (!button || !status) return;
+
+  // formsubmit.co/<address> -> formsubmit.co/ajax/<address>
+  var endpoint = form.action.replace('formsubmit.co/', 'formsubmit.co/ajax/');
+  var TIMEOUT_MS = 20000;
+
+  function setLoading(on) {
+    button.classList.toggle('is-loading', on);
+    button.disabled = on;
+    if (on) button.setAttribute('aria-busy', 'true');
+    else button.removeAttribute('aria-busy');
+  }
+
+  function showStatus(message, isError) {
+    status.textContent = message;
+    status.classList.toggle('is-error', !!isError);
+    status.hidden = !message;
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (button.disabled) return; // a request is already in flight
+
+    showStatus('');
+    setLoading(true);
+
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (controller) controller.abort(); }, TIMEOUT_MS);
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: new FormData(form),
+      signal: controller ? controller.signal : undefined
+    })
+      .then(function (response) {
+        return response.json().then(function (data) {
+          // FormSubmit reports failure in the body (success: "false") as well as by status.
+          if (!response.ok || String(data.success) !== 'true') throw new Error('rejected');
+        });
+      })
+      .then(function () {
+        form.reset();
+        showStatus('Thank you. A Premier specialist will be in touch shortly.');
+      })
+      .catch(function () {
+        // What was typed is left in place so the visitor can simply try again.
+        showStatus('We couldn\u2019t send your message. Please try again, or call 502-498-4212 ext 1000.', true);
+      })
+      .finally(function () {
+        clearTimeout(timer);
+        setLoading(false);
+      });
+  });
+})();

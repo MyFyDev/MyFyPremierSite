@@ -283,6 +283,15 @@ body.menu-open .site-header{z-index:130}
    later, more specific rule (a bot filling in a "visible" field is exactly what this catches). */
 .honeypot{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
 .privacy-note{color:var(--muted);font-size:.85rem;margin-top:4px}
+/* Submit button while the request is in flight. The label is hidden rather than
+   removed so the button keeps its exact size (no layout shift), and the spinner is
+   drawn over it. Pure CSS instead of a .gif: it stays sharp at any pixel density,
+   inherits the button's text colour, and costs no extra request. */
+.btn.is-loading{position:relative;color:transparent;cursor:progress;pointer-events:none}
+.btn.is-loading::after{content:"";position:absolute;top:50%;left:50%;width:1.2em;height:1.2em;margin:-.6em 0 0 -.6em;border:2px solid var(--dark);border-right-color:transparent;border-radius:50%;animation:btn-spin .7s linear infinite}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+.form-status{font-family:var(--sans);font-size:.95rem;color:var(--dark)}
+.form-status.is-error{color:#a12a2a}
 
 /* ---------- Prose (privacy / terms) ---------- */
 /* Wider than --textw on purpose: at --textw the all-caps h1 (privacy/terms) wrapped

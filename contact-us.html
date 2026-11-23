@@ -192,6 +192,9 @@ h1{font-size:5.25rem}h2{font-size:2.75rem}h3{font-size:1.875rem}
         <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" name="email" autocomplete="email" pattern="[^@\s]+@[^@\s]+\.[A-Za-z]{2,}" title="Enter a valid email address, for example name@example.com" required></div>
         <div class="field"><label for="f-msg">Message</label><textarea id="f-msg" name="Message" required></textarea></div>
         <button class="btn btn-gold" type="submit">Request Private Consultation</button>
+        <!-- Filled in by site.js once the request settles. Empty (and so silent to
+             screen readers) until then. -->
+        <p class="form-status" role="status" aria-live="polite" hidden></p>
       </form>
     </div>
   </div>
