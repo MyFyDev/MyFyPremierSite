@@ -16,11 +16,7 @@ Resources:
       SubnetId: !ImportValue test-AppSubnet
       SecurityGroupIds:
         - !ImportValue test-AppSecurityGroup
-      # The staging deploy key (EC2_ID_RSA), imported into EC2 under this name on
-      # 2026-11-23. daniel-ec2-instance-ssh-key was rotated out on Nov 20, so an
-      # instance launched with it refuses the deploy's login. Changing KeyName
-      # replaces the instance.
-      KeyName: myfy-staging-deploy-2026-11-20
+      KeyName: daniel-ec2-instance-ssh-key
       Tags:
         - Key: Name
           Value: stgMyFyPremierSite
