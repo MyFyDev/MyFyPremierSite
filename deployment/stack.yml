@@ -6,7 +6,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t4g.small
-      ImageId: ami-060945ab3b17e716d
+      ImageId: ami-04bde3808fe5f70cf
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
