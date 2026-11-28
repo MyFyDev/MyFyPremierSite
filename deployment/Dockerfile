@@ -12,7 +12,7 @@
 #     hook, so `npm ci` stays side-effect-free and dev machines don't get a global.
 #   - git + openssh-client installed explicitly: the `utilities` dep resolves to
 #     github:MyFyDev/utilities, so `npm ci` itself shells out to git over SSH.
-FROM node:22-bookworm-slim
+FROM node:22.23.5-bookworm-slim
 
 # ssh-agent/ssh-add come from openssh-client; ca-certificates is needed for the
 # registry fetches that npm ci does alongside the git dep.
